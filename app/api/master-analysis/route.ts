@@ -8,7 +8,17 @@ export async function POST(request: NextRequest) {
     const { resumeText, jobDescription } = await request.json();
 
     if (!resumeText) {
-      return NextResponse.json({ error: 'Resume text is required' }, { status: 400 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Resume text is required' 
+      }, { status: 400 });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'API key not configured. Please contact support.' 
+      }, { status: 500 });
     }
 
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -58,6 +68,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Master analysis error:', error);
     return NextResponse.json({ 
+      success: false,
       error: 'Analysis failed', 
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
