@@ -3,17 +3,8 @@ import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    const { pathname } = req.nextUrl
-    
-    // If user is not authenticated and trying to access protected route
-    if (!req.nextauth.token && !pathname.startsWith('/api/')) {
-      // Redirect to login page with callback URL
-      const loginUrl = new URL('/login', req.url)
-      loginUrl.searchParams.set('callbackUrl', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
-    
-    // Allow the request to continue
+    // This function only runs for protected routes
+    // Public routes are handled by the authorized callback
     return NextResponse.next()
   },
   {
