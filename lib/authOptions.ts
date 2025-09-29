@@ -102,8 +102,8 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-key-for-development',
-  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: false,
   events: {
     async signIn({ user, account, profile, isNewUser }) {
       console.log('User signed in:', { user: user.email, provider: account?.provider });
