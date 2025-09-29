@@ -11,10 +11,9 @@ export async function POST(request: NextRequest) {
     const session = await prisma.analysisSession.create({
       data: {
         userId: userId || 'anonymous',
-        type: quizType,
+        sessionType: quizType,
         status: 'active',
-        currentStep: 0,
-        responses: {}
+        data: JSON.stringify({ currentStep: 0, responses: {} })
       }
     })
 

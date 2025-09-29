@@ -6,63 +6,86 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'No file provided' 
-      }, { status: 400 });
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const fileType = file.type;
-    const fileName = file.name.toLowerCase();
+    // Check file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Unsupported file type. Please upload PDF, DOC, DOCX, or TXT files.' },
+        { status: 400 }
+      );
+    }
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'File size too large. Please upload files smaller than 10MB.' },
+        { status: 400 }
+      );
+    }
 
     let extractedText = '';
 
     try {
-      if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
-        // Handle plain text files
+      if (file.type === 'text/plain') {
         extractedText = await file.text();
-      } else if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+      } else if (file.type === 'application/pdf') {
         // For PDF files, we'll use a simple approach
-        // In production, you'd want to use pdf-parse or similar library
-        extractedText = `PDF file: ${fileName}\n\nNote: PDF text extraction requires additional setup. Please copy and paste your resume text directly for now.`;
-      } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-        // For DOCX files, we'll use a simple approach
-        // In production, you'd want to use mammoth or similar library
-        extractedText = `DOCX file: ${fileName}\n\nNote: DOCX text extraction requires additional setup. Please copy and paste your resume text directly for now.`;
+        // In production, you might want to use a PDF parsing library
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Simple text extraction (this is basic - consider using pdf-parse or similar)
+        extractedText = new TextDecoder().decode(uint8Array);
+        
+        // Clean up the text
+        extractedText = extractedText
+          .replace(/[^\x20-\x7E\n\r]/g, ' ') // Remove non-printable characters
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
       } else {
-        return NextResponse.json({ 
-          success: false,
-          error: 'Unsupported file type. Please use PDF, DOCX, DOC, or TXT files.' 
-        }, { status: 400 });
+        // For DOC/DOCX files, you might want to use mammoth or similar library
+        return NextResponse.json(
+          { error: 'DOC/DOCX parsing not implemented yet. Please convert to PDF or TXT.' },
+          { status: 400 }
+        );
       }
     } catch (extractionError) {
       console.error('Text extraction error:', extractionError);
-      return NextResponse.json({ 
-        success: false,
-        error: 'Failed to extract text from file. Please try copying and pasting your resume text directly.' 
-      }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Failed to extract text from file' },
+        { status: 500 }
+      );
     }
 
     if (!extractedText.trim()) {
-      return NextResponse.json({ 
-        success: false,
-        error: 'No text found in the file. Please ensure the file contains readable text.' 
-      }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No text found in the file' },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({
       success: true,
       text: extractedText,
       fileName: file.name,
-      fileSize: file.size
+      fileSize: file.size,
+      fileType: file.type
     });
 
   } catch (error) {
     console.error('File processing error:', error);
-    return NextResponse.json({ 
-      success: false,
-      error: 'Failed to process file. Please try again.',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to process file' },
+      { status: 500 }
+    );
   }
 }

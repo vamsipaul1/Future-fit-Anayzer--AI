@@ -92,14 +92,14 @@ export async function POST(request: NextRequest) {
 
     // Update session with current answer if provided
     if (currentAnswer !== undefined) {
-      const responses = session.responses as any || {}
-      responses[questionIndex] = currentAnswer
+      const sessionData = JSON.parse(session.data) as any;
+      const responses = sessionData.responses || {};
+      responses[questionIndex] = currentAnswer;
       
       await prisma.analysisSession.update({
         where: { id: sessionId },
         data: {
-          responses,
-          currentStep: questionIndex + 1
+          data: JSON.stringify({ ...sessionData, responses })
         }
       })
     }

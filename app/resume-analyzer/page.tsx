@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BackButton from '../../components/BackButton';
+import AIChatbot from '../../components/AIChatbot';
 import { 
   Upload, 
   FileText, 
@@ -16,57 +18,79 @@ import {
   ArrowRight,
   Download,
   Eye,
-  BarChart3
+  BarChart3,
+  Loader2,
+  AlertCircle,
+  Star,
+  Award,
+  Users,
+  Briefcase,
+  GraduationCap,
+  Clock,
+  File,
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
-interface SkillAnalysis {
-  matched: string[];
-  missing: string[];
-  recommendations: {
-    name: string;
-    why: string;
-    learningPath: string[];
-  }[];
-}
-
-interface AnalysisResult {
-  matched: string[];
-  missing: string[];
-  recommendations: {
-    name: string;
-    why: string;
-    learningPath: string[];
-  }[];
-  skillCoverage: number;
+interface ResumeAnalysis {
   overallScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  skills: {
+    technical: string[];
+    soft: string[];
+    missing: string[];
+  };
+  experience: {
+    years: number;
+    level: 'entry' | 'mid' | 'senior' | 'executive';
+    industries: string[];
+  };
+  recommendations: {
+    category: string;
+    suggestion: string;
+    priority: 'high' | 'medium' | 'low';
+  }[];
+  atsScore: number;
+  keywordMatch: number;
+  summary: string;
 }
 
-export default function ResumeAnalyzer() {
-  const [file, setFile] = useState<File | null>(null);
-  const [resumeText, setResumeText] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [jobDomain, setJobDomain] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [displayText, setDisplayText] = useState('');
-  const [currentSection, setCurrentSection] = useState('');
-  const [error, setError] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
+interface CareerAnalysis {
+  careerLevel: string;
+  careerPath: string[];
+  growthAreas: string[];
+  nextSteps: string[];
+  salaryRange: string;
+  marketDemand: 'high' | 'medium' | 'low';
+}
+
+export default function AdvancedResumeAnalyzer() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [analysisType, setAnalysisType] = useState<'comprehensive' | 'skills' | 'career'>('comprehensive');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<ResumeAnalysis | null>(null);
+  const [careerAnalysis, setCareerAnalysis] = useState<CareerAnalysis | null>(null);
+  const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = event.target.files?.[0];
-    if (!uploadedFile) return;
+  const steps = [
+    { id: 1, title: 'Upload Resume', description: 'Upload your resume file' },
+    { id: 2, title: 'Job Description', description: 'Add target job description (optional)' },
+    { id: 3, title: 'Analysis', description: 'AI-powered analysis' },
+    { id: 4, title: 'Results', description: 'View detailed insights' }
+  ];
 
-    setFile(uploadedFile);
-    setIsUploading(true);
+  const handleFileUpload = async (file: File) => {
+    setError('');
+    setIsAnalyzing(true);
 
     try {
       const formData = new FormData();
-      formData.append('file', uploadedFile);
+      formData.append('file', file);
 
       const response = await fetch('/api/extract-text', {
         method: 'POST',
@@ -74,528 +98,605 @@ export default function ResumeAnalyzer() {
       });
 
       const data = await response.json();
-      
-      if (data.success) {
-        setExtractedText(data.text);
-        setResumeText(data.text);
-      } else {
-        setError('Failed to extract text from file. Please try again.');
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to extract text');
       }
-    } catch (error) {
-      console.error('File upload error:', error);
-      setError('Failed to upload file. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
-  const typewriterEffect = (text: string, section: string, delay = 0) => {
-    setTimeout(() => {
-      setCurrentSection(section);
-      setDisplayText('');
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i < text.length) {
-          setDisplayText(text.slice(0, i + 1));
-          i++;
-        } else {
-          clearInterval(timer);
-        }
-      }, 20);
-    }, delay);
-  };
-
-  const handleAnalyze = async () => {
-    if (!resumeText || !jobDescription) {
-      setError('Please provide both resume text and job description.');
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setAnalysis(null);
-    setError('');
-
-    try {
-      const response = await fetch('/api/skill-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          resumeText, 
-          jobDescription,
-          jobTitle,
-          jobDomain 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setAnalysis(data.analysis);
-        
-        // Display analysis with typewriter effect
-        typewriterEffect(`Analysis Complete! Found ${data.analysis.matched.length} matched skills and ${data.analysis.missing.length} missing skills.`, 'summary', 500);
-      } else {
-        setError(data.error || 'Analysis failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Analysis error:', error);
-      setError('Network error. Please check your connection and try again.');
+      setUploadedFile(file);
+      setExtractedText(data.text);
+      setCurrentStep(2);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process file');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  // Prepare data for charts
-  const radarData = analysis ? [
-    { skill: 'Technical', value: analysis.skillCoverage },
-    { skill: 'Soft Skills', value: Math.min(100, analysis.skillCoverage + 10) },
-    { skill: 'Experience', value: Math.min(100, analysis.skillCoverage - 5) },
-    { skill: 'Education', value: Math.min(100, analysis.skillCoverage + 15) },
-    { skill: 'Certifications', value: Math.min(100, analysis.skillCoverage - 10) }
-  ] : [];
+  const handleAnalysis = async () => {
+    if (!extractedText) return;
 
-  const barData = analysis ? [
-    { name: 'Matched', value: analysis.matched.length, color: '#10B981' },
-    { name: 'Missing', value: analysis.missing.length, color: '#EF4444' },
-    { name: 'Recommended', value: analysis.recommendations.length, color: '#8B5CF6' }
-  ] : [];
+    setError('');
+    setIsAnalyzing(true);
+
+    try {
+      const response = await fetch('/api/resume-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeText: extractedText,
+          jobDescription: jobDescription || undefined,
+          analysisType: analysisType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Analysis failed');
+      }
+
+      console.log('API Response:', data); // Debug log
+
+      if (data.type === 'text') {
+        // Handle text response - show the actual AI analysis text
+        setAnalysisResult({
+          overallScore: 75,
+          strengths: ['AI Analysis Completed'],
+          weaknesses: ['Response returned as text format'],
+          skills: {
+            technical: ['Text Analysis'],
+            soft: ['AI Processing'],
+            missing: ['Structured data format']
+          },
+          experience: {
+            years: 0,
+            level: 'entry',
+            industries: []
+          },
+          recommendations: [{
+            category: 'Analysis Format',
+            suggestion: data.analysis,
+            priority: 'medium'
+          }],
+          atsScore: 70,
+          keywordMatch: 65,
+          summary: data.analysis
+        });
+      } else if (analysisType === 'comprehensive') {
+        setAnalysisResult(data);
+      } else if (analysisType === 'career') {
+        setCareerAnalysis(data);
+      } else {
+        // Handle skills analysis type
+        setAnalysisResult(data);
+      }
+
+      setCurrentStep(4);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Analysis failed');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const resetAnalysis = () => {
+    setCurrentStep(1);
+    setUploadedFile(null);
+    setExtractedText('');
+    setJobDescription('');
+    setAnalysisResult(null);
+    setCareerAnalysis(null);
+    setError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return 'bg-green-100';
+    if (score >= 60) return 'bg-yellow-100';
+    return 'bg-red-100';
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back to Dashboard Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-            <ArrowRight className="h-4 w-4 rotate-180" />
-            <span className="font-medium">Back to Dashboard</span>
-          </button>
-        </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-40">
+        <BackButton />
+      </div>
 
+      {/* AI Chatbot */}
+      <AIChatbot context="general" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="flex items-center justify-center space-x-4 mb-4">
-            <h1 className="text-4xl font-bold text-gray-900">
-              AI Resume Analysis
-            </h1>
-            <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
-              <Sparkles className="h-4 w-4" />
-              <span>Premium Feature</span>
-            </div>
-          </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload your resume for comprehensive AI-powered analysis
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Advanced Resume Analysis
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Get AI-powered insights on your resume with Google Gemini AI. 
+            Analyze skills, career progression, and get personalized recommendations.
           </p>
         </motion.div>
 
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Resume Upload Section */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              {/* File Upload Area */}
-              <div className="relative">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.txt"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  aria-label="Upload resume file"
-                />
-                <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-300 group"
-                >
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <Upload className="h-10 w-10 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                        Drop your resume here
-                      </h3>
-                      <p className="text-gray-600 mb-6">
-                        Or click to browse files. Supports PDF, DOC, DOCX formats up to 10MB.
-                      </p>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-                      >
-                        Choose Files
-                      </motion.button>
-                    </div>
+        {/* Progress Steps */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-12"
+        >
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-4">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      currentStep >= step.id
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        : 'bg-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : step.id}
                   </div>
-                </motion.div>
-              </div>
-
-              {/* File Type Icons */}
-              <div className="flex items-center justify-center space-x-6 mt-6">
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <FileText className="h-5 w-5" />
-                  <span className="text-sm font-medium">PDF</span>
+                  <div className="ml-3 text-left">
+                    <div className="text-sm font-medium text-gray-900">{step.title}</div>
+                    <div className="text-xs text-gray-500">{step.description}</div>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div className="w-8 h-0.5 bg-gray-300 mx-4"></div>
+                  )}
                 </div>
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <FileText className="h-5 w-5" />
-                  <span className="text-sm font-medium">DOC</span>
-                </div>
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <FileText className="h-5 w-5" />
-                  <span className="text-sm font-medium">DOCX</span>
-                </div>
-                <div className="flex items-center space-x-2 text-gray-500">
-                  <FileText className="h-5 w-5" />
-                  <span className="text-sm font-medium">TXT</span>
-                </div>
-              </div>
-
-              {/* Resume Text Input */}
-              <div className="mt-8">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Or paste resume text directly
-                </label>
-                <textarea
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  placeholder="Paste your resume text here..."
-                  className="w-full h-32 p-4 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                />
-              </div>
-
-              {/* Job Description Input */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Job Description (Optional)
-                </label>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here for targeted analysis..."
-                  className="w-full h-32 p-4 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                />
-              </div>
-
-              {/* Analyze Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAnalyze}
-                disabled={!resumeText || isAnalyzing}
-                className="w-full mt-8 py-4 px-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-3"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity }}
-                    >
-                      <Brain className="h-6 w-6" />
-                    </motion.div>
-                    <span>AI Analyzing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-6 w-6" />
-                    <span>Analyze Resume</span>
-                    <ArrowRight className="h-6 w-6" />
-                  </>
-                )}
-              </motion.button>
+              ))}
             </div>
-          </motion.div>
-
-          {/* Analysis Features Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="lg:col-span-1"
-          >
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Analysis Features</h3>
-              
-              <div className="space-y-6">
-                {/* ATS Optimization */}
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Target className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">ATS Optimization</h4>
-                    <p className="text-sm text-gray-600">Improve compatibility with Applicant Tracking Systems.</p>
-                  </div>
-                </div>
-
-                {/* Skill Gap Analysis */}
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Skill Gap Analysis</h4>
-                    <p className="text-sm text-gray-600">Identify missing skills and get learning recommendations.</p>
-                  </div>
-                </div>
-
-                {/* AI Recommendations */}
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">AI Recommendations</h4>
-                    <p className="text-sm text-gray-600">Get specific suggestions to improve your resume.</p>
-                  </div>
-                </div>
-
-                {/* Market Insights */}
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <BarChart3 className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Market Insights</h4>
-                    <p className="text-sm text-gray-600">Industry trends and salary benchmarks.</p>
-                  </div>
-                </div>
-
-                {/* Premium Analysis */}
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Premium Analysis</h4>
-                    <p className="text-sm text-gray-600">Advanced AI-powered insights and personalized recommendations.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
         {/* Error Display */}
-        <AnimatePresence>
-          {error && (
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center"
+          >
+            <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+            <span className="text-red-800">{error}</span>
+          </motion.div>
+        )}
+
+        {/* Step Content */}
+        <AnimatePresence mode="wait">
+          {/* Step 1: File Upload */}
+          {currentStep === 1 && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mt-8 bg-red-50 border border-red-200 rounded-2xl p-6"
+              key="upload"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-2xl mx-auto"
             >
-              <div className="flex items-center space-x-3">
-                <XCircle className="h-6 w-6 text-red-500" />
-                <div>
-                  <h3 className="text-lg font-semibold text-red-800">Analysis Error</h3>
-                  <p className="text-red-700">{error}</p>
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Upload className="w-10 h-10 text-purple-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Upload Your Resume
+                  </h2>
+                  <p className="text-gray-600 mb-8">
+                    Upload your resume in PDF, DOC, DOCX, or TXT format. 
+                    We'll extract the text and analyze it with AI.
+                  </p>
+
+                  <div
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-purple-400 transition-colors cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-2">
+                      Click to upload or drag and drop your resume
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      PDF, DOC, DOCX, TXT up to 10MB
+                    </p>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file);
+                    }}
+                    className="hidden"
+                    suppressHydrationWarning
+                  />
+
+                  {isAnalyzing && (
+                    <div className="mt-6 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-purple-600 mr-2" />
+                      <span className="text-gray-600">Extracting text from resume...</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
 
-        {/* Analysis Results */}
-        <AnimatePresence>
-          {analysis && (
+          {/* Step 2: Job Description */}
+          {currentStep === 2 && (
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="mt-8 space-y-8"
+              key="job-description"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-2xl mx-auto"
             >
-              {/* Summary Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-lg p-8"
-              >
-                <div className="flex items-center space-x-3 mb-6">
-                  <Sparkles className="h-8 w-8 text-green-500" />
-                  <h2 className="text-3xl font-bold text-gray-900">Analysis Complete!</h2>
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="text-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Briefcase className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Target Job Description
+                  </h2>
+                  <p className="text-gray-600">
+                    Add a job description to get targeted analysis and recommendations
+                  </p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-500 mb-2">{analysis.matched.length}</div>
-                    <div className="text-gray-600">Matched Skills</div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Analysis Type
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: 'comprehensive', label: 'Comprehensive', icon: Brain },
+                        { value: 'skills', label: 'Skills Focus', icon: Target },
+                        { value: 'career', label: 'Career Path', icon: TrendingUp }
+                      ].map(({ value, label, icon: Icon }) => (
+                        <button
+                          key={value}
+                          onClick={() => setAnalysisType(value as any)}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            analysisType === value
+                              ? 'border-purple-500 bg-purple-50 text-purple-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5 mx-auto mb-1" />
+                          <div className="text-xs font-medium">{label}</div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-red-500 mb-2">{analysis.missing.length}</div>
-                    <div className="text-gray-600">Missing Skills</div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job Description (Optional)
+                    </label>
+                    <textarea
+                      value={jobDescription}
+                      onChange={(e) => setJobDescription(e.target.value)}
+                      placeholder="Paste the job description here for targeted analysis..."
+                      className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                      suppressHydrationWarning
+                    />
                   </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-purple-500 mb-2">{analysis.overallScore}%</div>
-                    <div className="text-gray-600">Overall Score</div>
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => setCurrentStep(1)}
+                      className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={() => setCurrentStep(3)}
+                      className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
+                    >
+                      Continue →
+                    </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
+          )}
 
-              {/* Skills Visualization */}
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Radar Chart */}
-                <motion.div
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="bg-white rounded-2xl shadow-lg p-6"
-                >
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
-                    <BarChart3 className="h-6 w-6 text-blue-500" />
-                    <span>Skill Coverage Analysis</span>
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RadarChart data={radarData}>
-                      <PolarGrid />
-                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#6B7280' }} />
-                      <PolarRadiusAxis tick={{ fill: '#6B7280' }} />
-                      <Radar
-                        name="Skills"
-                        dataKey="value"
-                        stroke="#8B5CF6"
-                        fill="#8B5CF6"
-                        fillOpacity={0.3}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </motion.div>
+          {/* Step 3: Analysis */}
+          {currentStep === 3 && (
+            <motion.div
+              key="analysis"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Brain className="w-10 h-10 text-green-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    AI Analysis in Progress
+                  </h2>
+                  <p className="text-gray-600 mb-8">
+                    Our AI is analyzing your resume using Google Gemini AI. 
+                    This may take a few moments...
+                  </p>
 
-                {/* Bar Chart */}
-                <motion.div
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                  className="bg-white rounded-2xl shadow-lg p-6"
-                >
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
-                    <TrendingUp className="h-6 w-6 text-purple-500" />
-                    <span>Skills Breakdown</span>
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={barData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
-                      <YAxis tick={{ fill: '#6B7280' }} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #E5E7EB',
-                          borderRadius: '8px',
-                          color: '#374151'
-                        }}
-                      />
-                      <Bar dataKey="value" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </motion.div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-purple-600 mr-3" />
+                      <span className="text-lg font-medium text-gray-700">
+                        Analyzing with Gemini AI...
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                        <div className="text-sm font-medium text-blue-800">Text Extraction</div>
+                        <div className="text-xs text-blue-600">Complete</div>
+                      </div>
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <Brain className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                        <div className="text-sm font-medium text-purple-800">AI Analysis</div>
+                        <div className="text-xs text-purple-600">In Progress</div>
+                      </div>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <BarChart3 className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                        <div className="text-sm font-medium text-gray-600">Results</div>
+                        <div className="text-xs text-gray-500">Pending</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleAnalysis}
+                    disabled={isAnalyzing}
+                    className="mt-8 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center mx-auto"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Start Analysis
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 4: Results */}
+          {currentStep === 4 && analysisResult && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              {/* Overall Score */}
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    Resume Analysis Results
+                  </h2>
+                  <div className="flex items-center justify-center space-x-4">
+                    <div className={`w-24 h-24 rounded-full ${getScoreBgColor(analysisResult.overallScore || 0)} flex items-center justify-center`}>
+                      <span className={`text-3xl font-bold ${getScoreColor(analysisResult.overallScore || 0)}`}>
+                        {analysisResult.overallScore || 0}
+                      </span>
+                    </div>
+                    <div className="text-left">
+                      <div className="text-2xl font-bold text-gray-900">Overall Score</div>
+                      <div className="text-gray-600">Out of 100</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <div className="flex items-center mb-4">
+                      <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                      <h3 className="text-lg font-semibold text-green-800">Strengths</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {(analysisResult.strengths || []).map((strength, index) => (
+                        <li key={index} className="text-green-700 flex items-center">
+                          <Star className="w-4 h-4 mr-2" />
+                          {strength}
+                        </li>
+                      ))}
+                      {(!analysisResult.strengths || analysisResult.strengths.length === 0) && (
+                        <li className="text-gray-500 italic">No strengths identified</li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="bg-red-50 rounded-lg p-6">
+                    <div className="flex items-center mb-4">
+                      <XCircle className="w-6 h-6 text-red-600 mr-2" />
+                      <h3 className="text-lg font-semibold text-red-800">Areas for Improvement</h3>
+                    </div>
+                    <ul className="space-y-2">
+                      {(analysisResult.weaknesses || []).map((weakness, index) => (
+                        <li key={index} className="text-red-700 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          {weakness}
+                        </li>
+                      ))}
+                      {(!analysisResult.weaknesses || analysisResult.weaknesses.length === 0) && (
+                        <li className="text-gray-500 italic">No areas for improvement identified</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
               </div>
 
-              {/* Skills Sections */}
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* Matched Skills */}
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.8 }}
-                  className="bg-white rounded-2xl shadow-lg p-6"
-                >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <CheckCircle className="h-8 w-8 text-green-500" />
-                    <h3 className="text-2xl font-bold text-gray-900">✅ Matched Skills</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {analysis.matched.map((skill, index) => (
-                      <motion.div
-                        key={skill}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.9 + index * 0.1 }}
-                        className="bg-green-50 border border-green-200 rounded-xl p-3"
-                      >
-                        <span className="text-green-700 font-medium">{skill}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Missing Skills */}
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 1.0 }}
-                  className="bg-white rounded-2xl shadow-lg p-6"
-                >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <XCircle className="h-8 w-8 text-red-500" />
-                    <h3 className="text-2xl font-bold text-gray-900">❌ Missing Skills</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {analysis.missing.map((skill, index) => (
-                      <motion.div
-                        key={skill}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 1.1 + index * 0.1 }}
-                        className="bg-red-50 border border-red-200 rounded-xl p-3"
-                      >
-                        <span className="text-red-700 font-medium">{skill}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Recommendations */}
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 1.2 }}
-                  className="bg-white rounded-2xl shadow-lg p-6"
-                >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <Lightbulb className="h-8 w-8 text-purple-500" />
-                    <h3 className="text-2xl font-bold text-gray-900">💡 Recommendations</h3>
-                  </div>
-                  <div className="space-y-4">
-                    {analysis.recommendations.map((rec, index) => (
-                      <motion.div
-                        key={rec.name}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: 1.3 + index * 0.1 }}
-                        className="bg-purple-50 border border-purple-200 rounded-xl p-4"
-                      >
-                        <h4 className="text-purple-800 font-bold mb-2">{rec.name}</h4>
-                        <p className="text-purple-700 text-sm mb-3">{rec.why}</p>
-                        <div className="space-y-1">
-                          {rec.learningPath.map((step, stepIndex) => (
-                            <div key={stepIndex} className="text-purple-600 text-xs flex items-center space-x-2">
-                              <ArrowRight className="h-3 w-3" />
-                              <span>{step}</span>
-                            </div>
-                          ))}
+              {/* Skills Analysis */}
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <Target className="w-6 h-6 mr-2 text-purple-600" />
+                  Skills Analysis
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-blue-50 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-blue-800 mb-4">Technical Skills</h4>
+                    <div className="space-y-2">
+                      {(analysisResult.skills?.technical || []).map((skill, index) => (
+                        <div key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                          {skill}
                         </div>
-                      </motion.div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </motion.div>
+
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-green-800 mb-4">Soft Skills</h4>
+                    <div className="space-y-2">
+                      {(analysisResult.skills?.soft || []).map((skill, index) => (
+                        <div key={index} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                          {skill}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-50 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-orange-800 mb-4">Missing Skills</h4>
+                    <div className="space-y-2">
+                      {(analysisResult.skills?.missing || []).map((skill, index) => (
+                        <div key={index} className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">
+                          {skill}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <Lightbulb className="w-6 h-6 mr-2 text-yellow-600" />
+                  AI Recommendations
+                </h3>
+                
+                <div className="space-y-4">
+                  {(analysisResult.recommendations || []).map((rec, index) => (
+                    <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                      rec.priority === 'high' ? 'border-red-500 bg-red-50' :
+                      rec.priority === 'medium' ? 'border-yellow-500 bg-yellow-50' :
+                      'border-green-500 bg-green-50'
+                    }`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">{rec.category}</h4>
+                          <p className="text-gray-700 mt-1">{rec.suggestion}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          rec.priority === 'high' ? 'bg-red-100 text-red-800' :
+                          rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {rec.priority}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                  <Sparkles className="w-6 h-6 mr-2 text-purple-600" />
+                  AI Summary
+                </h3>
+                <p className="text-gray-700 text-lg leading-relaxed">
+                  {analysisResult.summary || 'No summary available'}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={resetAnalysis}
+                  className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  Analyze Another Resume
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all flex items-center"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  Download Report
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Fallback: Step 4 but no results */}
+          {currentStep === 4 && !analysisResult && !careerAnalysis && (
+            <motion.div
+              key="no-results"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+                <div className="w-20 h-20 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="w-10 h-10 text-yellow-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Analysis Complete
+                </h2>
+                <p className="text-gray-600 mb-8">
+                  The analysis has been completed, but the results are not displaying properly. 
+                  Please check the browser console for more details.
+                </p>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setCurrentStep(3)}
+                    className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors mr-4"
+                  >
+                    ← Back to Analysis
+                  </button>
+                  <button
+                    onClick={resetAnalysis}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all"
+                  >
+                    Start Over
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

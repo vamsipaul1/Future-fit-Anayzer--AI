@@ -3,6 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import BackButton from '../../components/BackButton'
+import AIChatbot from '../../components/AIChatbot'
 import { 
   ArrowLeft,
   Brain,
@@ -17,6 +19,13 @@ import {
 export default function CareerDecisionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-40">
+        <BackButton />
+      </div>
+
+      {/* AI Chatbot */}
+      <AIChatbot context="career" />
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div

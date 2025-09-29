@@ -72,27 +72,27 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    const debugInfo = getDebugInfo(request, startTime, { error: error.message })
+    const debugInfo = getDebugInfo(request, startTime, { error: error instanceof Error ? error.message : 'Unknown error' })
     
     return NextResponse.json({
       success: false,
       error: 'Debug analysis failed',
       debug: debugInfo,
       errorDetails: {
-        message: error.message,
-        stack: error.stack,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
         processingTime: debugInfo.processingTime
       }
     }, { status: 500 })
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const startTime = Date.now()
   
   try {
     const debugInfo = getDebugInfo(
-      new Request('http://localhost:3000/api/auth/debug-analysis'),
+      request,
       startTime,
       { method: 'GET' }
     )
@@ -129,7 +129,7 @@ export async function GET() {
     return NextResponse.json({
       success: false,
       error: 'Debug API failed',
-      message: error.message,
+      message: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }

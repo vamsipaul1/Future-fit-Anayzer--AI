@@ -69,15 +69,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Analyze responses
-    const analysis = analyzeCareerPath(finalAnswers || session.responses)
+    const sessionData = JSON.parse(session.data) as any;
+    const analysis = analyzeCareerPath(finalAnswers || sessionData.responses)
 
     // Update session with results
     await prisma.analysisSession.update({
       where: { id: sessionId },
       data: {
         status: 'completed',
-        results: analysis,
-        completedAt: new Date()
+        results: JSON.stringify(analysis)
       }
     })
 

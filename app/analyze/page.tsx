@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import BackButton from '../../components/BackButton';
+import AIChatbot from '../../components/AIChatbot';
 
 export default function AnalyzePage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -62,6 +64,13 @@ export default function AnalyzePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-40">
+        <BackButton />
+      </div>
+
+      {/* AI Chatbot */}
+      <AIChatbot context="skills" />
       <div className="max-w-4xl mx-auto p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
