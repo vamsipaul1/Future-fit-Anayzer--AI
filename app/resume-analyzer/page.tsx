@@ -163,69 +163,53 @@ export default function ResumeAnalyzer() {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back to Dashboard Button */}
         <motion.div
-          className="absolute top-0 left-0 w-full h-full"
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%)',
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-        />
-      </div>
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+            <ArrowRight className="h-4 w-4 rotate-180" />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        </motion.div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -50 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="flex items-center justify-center mb-6">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center mr-4"
-            >
-              <Brain className="h-8 w-8 text-white" />
-            </motion.div>
-            <h1 className="text-5xl font-black bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Job Scan Analysis
+          <div className="flex items-center justify-center space-x-4 mb-4">
+            <h1 className="text-4xl font-bold text-gray-900">
+              AI Resume Analysis
             </h1>
+            <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
+              <Sparkles className="h-4 w-4" />
+              <span>Premium Feature</span>
+            </div>
           </div>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Upload your resume, input job requirements, and get AI-powered skill analysis with personalized recommendations
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Upload your resume for comprehensive AI-powered analysis
           </p>
         </motion.div>
 
-        {/* Main Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 mb-8 shadow-2xl"
-        >
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Resume Upload Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-white">Resume Upload</h2>
-              </div>
-
-              {/* File Upload */}
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Resume Upload Section */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="lg:col-span-2"
+          >
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              {/* File Upload Area */}
               <div className="relative">
                 <input
                   ref={fileInputRef}
@@ -235,123 +219,179 @@ export default function ResumeAnalyzer() {
                   className="hidden"
                   aria-label="Upload resume file"
                 />
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="w-full p-6 border-2 border-dashed border-blue-400/50 rounded-2xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 transition-all duration-300 group"
+                  className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-300 group"
                 >
-                  <div className="flex flex-col items-center space-y-3">
-                    <motion.div
-                      animate={isUploading ? { rotate: 360 } : {}}
-                      transition={{ duration: 1, repeat: isUploading ? Infinity : 0 }}
-                    >
-                      <FileText className="h-12 w-12 text-blue-400 group-hover:text-blue-300" />
-                    </motion.div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-white mb-1">
-                        {file ? file.name : 'Click to upload resume'}
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <Upload className="h-10 w-10 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        Drop your resume here
+                      </h3>
+                      <p className="text-gray-600 mb-6">
+                        Or click to browse files. Supports PDF, DOC, DOCX formats up to 10MB.
                       </p>
-                      <p className="text-sm text-gray-400">
-                        PDF, DOC, DOCX, or TXT files
-                      </p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+                      >
+                        Choose Files
+                      </motion.button>
                     </div>
                   </div>
-                </motion.button>
+                </motion.div>
+              </div>
+
+              {/* File Type Icons */}
+              <div className="flex items-center justify-center space-x-6 mt-6">
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-sm font-medium">PDF</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-sm font-medium">DOC</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-sm font-medium">DOCX</span>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-sm font-medium">TXT</span>
+                </div>
               </div>
 
               {/* Resume Text Input */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+              <div className="mt-8">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Or paste resume text directly
                 </label>
                 <textarea
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   placeholder="Paste your resume text here..."
-                  className="w-full h-32 p-4 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                  className="w-full h-32 p-4 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 />
               </div>
-            </div>
 
-            {/* Job Description Section */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Target className="h-5 w-5 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-white">Job Requirements</h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Job Title
-                  </label>
-                  <input
-                    type="text"
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder="e.g., Software Engineer"
-                    className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Domain
-                  </label>
-                  <input
-                    type="text"
-                    value={jobDomain}
-                    onChange={(e) => setJobDomain(e.target.value)}
-                    placeholder="e.g., Technology"
-                    className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Job Description
+              {/* Job Description Input */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Job Description (Optional)
                 </label>
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description here..."
-                  className="w-full h-32 p-4 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm"
+                  placeholder="Paste the job description here for targeted analysis..."
+                  className="w-full h-32 p-4 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Analyze Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleAnalyze}
-            disabled={!resumeText || !jobDescription || isAnalyzing}
-            className="w-full mt-8 py-4 px-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold text-lg rounded-2xl shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3"
+              {/* Analyze Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleAnalyze}
+                disabled={!resumeText || isAnalyzing}
+                className="w-full mt-8 py-4 px-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold text-lg rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-3"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      <Brain className="h-6 w-6" />
+                    </motion.div>
+                    <span>AI Analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-6 w-6" />
+                    <span>Analyze Resume</span>
+                    <ArrowRight className="h-6 w-6" />
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Analysis Features Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="lg:col-span-1"
           >
-            {isAnalyzing ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <Brain className="h-6 w-6" />
-                </motion.div>
-                <span>AI Analyzing...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="h-6 w-6" />
-                <span>Analyze Skills</span>
-                <ArrowRight className="h-6 w-6" />
-              </>
-            )}
-          </motion.button>
-        </motion.div>
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Analysis Features</h3>
+              
+              <div className="space-y-6">
+                {/* ATS Optimization */}
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Target className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">ATS Optimization</h4>
+                    <p className="text-sm text-gray-600">Improve compatibility with Applicant Tracking Systems.</p>
+                  </div>
+                </div>
+
+                {/* Skill Gap Analysis */}
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">Skill Gap Analysis</h4>
+                    <p className="text-sm text-gray-600">Identify missing skills and get learning recommendations.</p>
+                  </div>
+                </div>
+
+                {/* AI Recommendations */}
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">AI Recommendations</h4>
+                    <p className="text-sm text-gray-600">Get specific suggestions to improve your resume.</p>
+                  </div>
+                </div>
+
+                {/* Market Insights */}
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <BarChart3 className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">Market Insights</h4>
+                    <p className="text-sm text-gray-600">Industry trends and salary benchmarks.</p>
+                  </div>
+                </div>
+
+                {/* Premium Analysis */}
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">Premium Analysis</h4>
+                    <p className="text-sm text-gray-600">Advanced AI-powered insights and personalized recommendations.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
 
         {/* Error Display */}
         <AnimatePresence>
@@ -360,13 +400,13 @@ export default function ResumeAnalyzer() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="backdrop-blur-xl bg-red-500/10 border border-red-500/20 rounded-2xl p-6 mb-8"
+              className="mt-8 bg-red-50 border border-red-200 rounded-2xl p-6"
             >
               <div className="flex items-center space-x-3">
-                <XCircle className="h-6 w-6 text-red-400" />
+                <XCircle className="h-6 w-6 text-red-500" />
                 <div>
-                  <h3 className="text-lg font-semibold text-red-300">Analysis Error</h3>
-                  <p className="text-red-200">{error}</p>
+                  <h3 className="text-lg font-semibold text-red-800">Analysis Error</h3>
+                  <p className="text-red-700">{error}</p>
                 </div>
               </div>
             </motion.div>
@@ -380,31 +420,31 @@ export default function ResumeAnalyzer() {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="space-y-8"
+              className="mt-8 space-y-8"
             >
               {/* Summary Card */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="backdrop-blur-xl bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-3xl p-8"
+                className="bg-white rounded-2xl shadow-lg p-8"
               >
                 <div className="flex items-center space-x-3 mb-6">
-                  <Sparkles className="h-8 w-8 text-green-400" />
-                  <h2 className="text-3xl font-bold text-white">Analysis Complete!</h2>
+                  <Sparkles className="h-8 w-8 text-green-500" />
+                  <h2 className="text-3xl font-bold text-gray-900">Analysis Complete!</h2>
                 </div>
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-green-400 mb-2">{analysis.matched.length}</div>
-                    <div className="text-gray-300">Matched Skills</div>
+                    <div className="text-4xl font-bold text-green-500 mb-2">{analysis.matched.length}</div>
+                    <div className="text-gray-600">Matched Skills</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-red-400 mb-2">{analysis.missing.length}</div>
-                    <div className="text-gray-300">Missing Skills</div>
+                    <div className="text-4xl font-bold text-red-500 mb-2">{analysis.missing.length}</div>
+                    <div className="text-gray-600">Missing Skills</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-4xl font-bold text-purple-400 mb-2">{analysis.overallScore}%</div>
-                    <div className="text-gray-300">Overall Score</div>
+                    <div className="text-4xl font-bold text-purple-500 mb-2">{analysis.overallScore}%</div>
+                    <div className="text-gray-600">Overall Score</div>
                   </div>
                 </div>
               </motion.div>
@@ -416,17 +456,17 @@ export default function ResumeAnalyzer() {
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.4 }}
-                  className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-6"
+                  className="bg-white rounded-2xl shadow-lg p-6"
                 >
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center space-x-2">
-                    <BarChart3 className="h-6 w-6 text-blue-400" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <BarChart3 className="h-6 w-6 text-blue-500" />
                     <span>Skill Coverage Analysis</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <RadarChart data={radarData}>
                       <PolarGrid />
-                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#E5E7EB' }} />
-                      <PolarRadiusAxis tick={{ fill: '#E5E7EB' }} />
+                      <PolarAngleAxis dataKey="skill" tick={{ fill: '#6B7280' }} />
+                      <PolarRadiusAxis tick={{ fill: '#6B7280' }} />
                       <Radar
                         name="Skills"
                         dataKey="value"
@@ -443,23 +483,23 @@ export default function ResumeAnalyzer() {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
-                  className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-6"
+                  className="bg-white rounded-2xl shadow-lg p-6"
                 >
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center space-x-2">
-                    <TrendingUp className="h-6 w-6 text-purple-400" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <TrendingUp className="h-6 w-6 text-purple-500" />
                     <span>Skills Breakdown</span>
                   </h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={barData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="name" tick={{ fill: '#E5E7EB' }} />
-                      <YAxis tick={{ fill: '#E5E7EB' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
+                      <YAxis tick={{ fill: '#6B7280' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          backgroundColor: 'white',
+                          border: '1px solid #E5E7EB',
                           borderRadius: '8px',
-                          color: 'white'
+                          color: '#374151'
                         }}
                       />
                       <Bar dataKey="value" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
@@ -475,11 +515,11 @@ export default function ResumeAnalyzer() {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.8 }}
-                  className="backdrop-blur-xl bg-green-500/10 border border-green-500/20 rounded-3xl p-6"
+                  className="bg-white rounded-2xl shadow-lg p-6"
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <CheckCircle className="h-8 w-8 text-green-400" />
-                    <h3 className="text-2xl font-bold text-white">✅ Matched Skills</h3>
+                    <CheckCircle className="h-8 w-8 text-green-500" />
+                    <h3 className="text-2xl font-bold text-gray-900">✅ Matched Skills</h3>
                   </div>
                   <div className="space-y-3">
                     {analysis.matched.map((skill, index) => (
@@ -488,9 +528,9 @@ export default function ResumeAnalyzer() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.9 + index * 0.1 }}
-                        className="bg-green-500/20 border border-green-500/30 rounded-xl p-3 backdrop-blur-sm"
+                        className="bg-green-50 border border-green-200 rounded-xl p-3"
                       >
-                        <span className="text-green-300 font-medium">{skill}</span>
+                        <span className="text-green-700 font-medium">{skill}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -501,11 +541,11 @@ export default function ResumeAnalyzer() {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1.0 }}
-                  className="backdrop-blur-xl bg-red-500/10 border border-red-500/20 rounded-3xl p-6"
+                  className="bg-white rounded-2xl shadow-lg p-6"
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <XCircle className="h-8 w-8 text-red-400" />
-                    <h3 className="text-2xl font-bold text-white">❌ Missing Skills</h3>
+                    <XCircle className="h-8 w-8 text-red-500" />
+                    <h3 className="text-2xl font-bold text-gray-900">❌ Missing Skills</h3>
                   </div>
                   <div className="space-y-3">
                     {analysis.missing.map((skill, index) => (
@@ -514,9 +554,9 @@ export default function ResumeAnalyzer() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 1.1 + index * 0.1 }}
-                        className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 backdrop-blur-sm"
+                        className="bg-red-50 border border-red-200 rounded-xl p-3"
                       >
-                        <span className="text-red-300 font-medium">{skill}</span>
+                        <span className="text-red-700 font-medium">{skill}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -527,11 +567,11 @@ export default function ResumeAnalyzer() {
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 1.2 }}
-                  className="backdrop-blur-xl bg-purple-500/10 border border-purple-500/20 rounded-3xl p-6"
+                  className="bg-white rounded-2xl shadow-lg p-6"
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <Lightbulb className="h-8 w-8 text-purple-400" />
-                    <h3 className="text-2xl font-bold text-white">💡 Recommendations</h3>
+                    <Lightbulb className="h-8 w-8 text-purple-500" />
+                    <h3 className="text-2xl font-bold text-gray-900">💡 Recommendations</h3>
                   </div>
                   <div className="space-y-4">
                     {analysis.recommendations.map((rec, index) => (
@@ -540,13 +580,13 @@ export default function ResumeAnalyzer() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5, delay: 1.3 + index * 0.1 }}
-                        className="bg-purple-500/20 border border-purple-500/30 rounded-xl p-4 backdrop-blur-sm"
+                        className="bg-purple-50 border border-purple-200 rounded-xl p-4"
                       >
-                        <h4 className="text-purple-300 font-bold mb-2">{rec.name}</h4>
-                        <p className="text-purple-200 text-sm mb-3">{rec.why}</p>
+                        <h4 className="text-purple-800 font-bold mb-2">{rec.name}</h4>
+                        <p className="text-purple-700 text-sm mb-3">{rec.why}</p>
                         <div className="space-y-1">
                           {rec.learningPath.map((step, stepIndex) => (
-                            <div key={stepIndex} className="text-purple-100 text-xs flex items-center space-x-2">
+                            <div key={stepIndex} className="text-purple-600 text-xs flex items-center space-x-2">
                               <ArrowRight className="h-3 w-3" />
                               <span>{step}</span>
                             </div>
