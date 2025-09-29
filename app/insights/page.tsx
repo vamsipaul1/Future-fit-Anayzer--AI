@@ -1,318 +1,247 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  ArrowLeft,
+  Lightbulb,
+  TrendingUp,
+  Target,
+  Brain,
+  Award,
+  Calendar,
+  Clock,
+  BarChart3,
+  Home,
+  FileText,
+  User
+} from 'lucide-react';
 
 export default function InsightsPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'analytics', label: 'Analytics' },
-    { id: 'daily-focus', label: 'Daily Focus' },
-    { id: 'milestones', label: 'Milestones' },
-    { id: 'resilience', label: 'Resilience' }
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/auth/signin');
+    } else {
+      setIsLoading(false);
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const insights = [
+    {
+      id: 1,
+      title: "Skill Growth Trend",
+      description: "Your Python skills have improved by 25% this month",
+      icon: <TrendingUp className="w-6 h-6 text-green-500" />,
+      color: "bg-green-100",
+      trend: "+25%"
+    },
+    {
+      id: 2,
+      title: "Career Alignment",
+      description: "Your current skills align 85% with Full Stack Developer role",
+      icon: <Target className="w-6 h-6 text-blue-500" />,
+      color: "bg-blue-100",
+      trend: "85%"
+    },
+    {
+      id: 3,
+      title: "Learning Efficiency",
+      description: "You're learning 30% faster than average",
+      icon: <Brain className="w-6 h-6 text-purple-500" />,
+      color: "bg-purple-100",
+      trend: "+30%"
+    },
+    {
+      id: 4,
+      title: "Achievement Unlocked",
+      description: "Completed 5 skill assessments this week",
+      icon: <Award className="w-6 h-6 text-yellow-500" />,
+      color: "bg-yellow-100",
+      trend: "5"
+    }
+  ];
+
+  const recommendations = [
+    {
+      title: "Focus on React Advanced Concepts",
+      description: "Based on your current progress, you should focus on React hooks and state management",
+      priority: "High",
+      category: "Skills"
+    },
+    {
+      title: "Consider AI/ML Specialization",
+      description: "Your analytical skills suggest you'd excel in AI/ML roles",
+      priority: "Medium",
+      category: "Career"
+    },
+    {
+      title: "Build Portfolio Projects",
+      description: "Create 2-3 projects to showcase your Full Stack skills",
+      priority: "High",
+      category: "Portfolio"
+    }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Insights Dashboard
-          </h1>
-          <p className="text-xl text-gray-600">
-            Track your progress and gain valuable insights
-          </p>
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </button>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 bg-gray-100 rounded-lg px-4 py-2">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">{session.user?.name || 'User'}</div>
+                <div className="text-gray-500">{session.user?.email}</div>
+              </div>
+            </div>
+          </div>
         </div>
+      </header>
 
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-gray-900 text-white min-h-[calc(100vh-73px)]">
+          <div className="p-6">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 mb-8">
+              <img
+                src="/images/even.png"
+                alt="FutureFit Logo"
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-xl font-bold">FutureFit</span>
+            </div>
+
+            {/* Navigation */}
+            <nav className="space-y-2">
+              <Link href="/dashboard" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Home className="w-5 h-5" />
+                <span>Dashboard</span>
+              </Link>
+              <Link href="/analyze" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <BarChart3 className="w-5 h-5" />
+                <span>Skills</span>
+              </Link>
+              <Link href="/career-decision" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Target className="w-5 h-5" />
+                <span>Career Path</span>
+              </Link>
+              <Link href="/resume-analyzer" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <FileText className="w-5 h-5" />
+                <span>Resume Scan</span>
+              </Link>
+              <Link href="/insights" className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
+                <Lightbulb className="w-5 h-5" />
+                <span>Insights</span>
+              </Link>
+              <Link href="/history" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Clock className="w-5 h-5" />
+                <span>History</span>
+              </Link>
             </nav>
           </div>
+        </aside>
 
-          <div className="p-6">
-            {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'analytics' && <AnalyticsTab />}
-            {activeTab === 'daily-focus' && <DailyFocusTab />}
-            {activeTab === 'milestones' && <MilestonesTab />}
-            {activeTab === 'resilience' && <ResilienceTab />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Insights & Analytics</h1>
+              <p className="text-gray-600">Discover patterns in your learning journey and get personalized recommendations</p>
+            </div>
 
-function OverviewTab() {
-  const stats = [
-    { label: 'Skills Learned', value: '24', change: '+12%' },
-    { label: 'Hours Studied', value: '156', change: '+8%' },
-    { label: 'Projects Completed', value: '8', change: '+25%' },
-    { label: 'Certifications', value: '3', change: '+50%' }
-  ];
+            {/* Insights Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {insights.map((insight) => (
+                <motion.div
+                  key={insight.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-12 h-12 ${insight.color} rounded-lg flex items-center justify-center`}>
+                      {insight.icon}
+                    </div>
+                    <span className="text-lg font-bold text-gray-900">{insight.trend}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{insight.title}</h3>
+                  <p className="text-sm text-gray-600">{insight.description}</p>
+                </motion.div>
+              ))}
+            </div>
 
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Overview</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-gray-50 p-6 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <span className="text-sm font-medium text-green-600">{stat.change}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-blue-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">Recent Activity</h3>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-blue-800">Completed React course</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-blue-800">Started Node.js project</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-blue-800">Updated portfolio</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-green-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-green-900 mb-4">Upcoming Goals</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-green-800">Complete JavaScript certification</span>
-              <span className="text-sm text-green-600">2 weeks</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-green-800">Build 3 new projects</span>
-              <span className="text-sm text-green-600">1 month</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-green-800">Learn TypeScript</span>
-              <span className="text-sm text-green-600">3 weeks</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsTab() {
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Analytics</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Learning Progress</h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>JavaScript</span>
-                <span>85%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '85%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>React</span>
-                <span>70%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '70%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Node.js</span>
-                <span>60%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+            {/* Recommendations */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Personalized Recommendations</h2>
+              <div className="space-y-4">
+                {recommendations.map((rec, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div className={`w-3 h-3 rounded-full mt-2 ${
+                      rec.priority === 'High' ? 'bg-red-500' : 
+                      rec.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}></div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900">{rec.title}</h3>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          rec.priority === 'High' ? 'bg-red-100 text-red-800' : 
+                          rec.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                        }`}>
+                          {rec.priority} Priority
+                        </span>
+                      </div>
+                      <p className="text-gray-600">{rec.description}</p>
+                      <span className="text-sm text-blue-600 font-medium">{rec.category}</span>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Time Spent</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span>This Week</span>
-              <span className="font-semibold">24 hours</span>
-            </div>
-            <div className="flex justify-between">
-              <span>This Month</span>
-              <span className="font-semibold">96 hours</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Total</span>
-              <span className="font-semibold">456 hours</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DailyFocusTab() {
-  const todayTasks = [
-    { task: 'Complete React hooks tutorial', completed: true },
-    { task: 'Practice coding challenges', completed: false },
-    { task: 'Update portfolio project', completed: false },
-    { task: 'Read tech articles', completed: true }
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Daily Focus</h2>
-      
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Tasks</h3>
-        <div className="space-y-3">
-          {todayTasks.map((item, index) => (
-            <div key={index} className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                checked={item.completed}
-                readOnly
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className={item.completed ? 'line-through text-gray-500' : 'text-gray-900'}>
-                {item.task}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-blue-50 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">Focus Area</h3>
-        <p className="text-blue-800">
-          Today's focus is on mastering React hooks and state management. 
-          Spend 2 hours on hands-on practice and 1 hour on theory.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function MilestonesTab() {
-  const milestones = [
-    { title: 'First Project', date: '2024-01-15', status: 'completed' },
-    { title: 'JavaScript Certification', date: '2024-02-20', status: 'completed' },
-    { title: 'React Portfolio', date: '2024-03-10', status: 'completed' },
-    { title: 'Full-Stack App', date: '2024-04-05', status: 'in-progress' },
-    { title: 'Open Source Contribution', date: '2024-05-01', status: 'pending' }
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Milestones</h2>
-      
-      <div className="space-y-4">
-        {milestones.map((milestone, index) => (
-          <div key={index} className="flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-lg">
-            <div className={`w-3 h-3 rounded-full ${
-              milestone.status === 'completed' ? 'bg-green-500' :
-              milestone.status === 'in-progress' ? 'bg-yellow-500' : 'bg-gray-300'
-            }`}></div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">{milestone.title}</h3>
-              <p className="text-sm text-gray-600">{milestone.date}</p>
-            </div>
-            <span className={`px-2 py-1 text-xs rounded-full ${
-              milestone.status === 'completed' ? 'bg-green-100 text-green-800' :
-              milestone.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              {milestone.status}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ResilienceTab() {
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Resilience Score</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Score</h3>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-green-600 mb-2">8.5</div>
-            <p className="text-gray-600">Out of 10</p>
-            <div className="mt-4">
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div className="bg-green-500 h-3 rounded-full" style={{ width: '85%' }}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Factors</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span>Problem Solving</span>
-              <span className="font-semibold text-green-600">9/10</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Adaptability</span>
-              <span className="font-semibold text-green-600">8/10</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Persistence</span>
-              <span className="font-semibold text-yellow-600">7/10</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Learning Speed</span>
-              <span className="font-semibold text-green-600">9/10</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 bg-blue-50 p-6 rounded-lg">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">Recommendations</h3>
-        <ul className="text-blue-800 space-y-2">
-          <li>• Focus on building persistence through consistent daily practice</li>
-          <li>• Challenge yourself with more complex problems</li>
-          <li>• Take breaks to maintain mental resilience</li>
-        </ul>
+        </main>
       </div>
     </div>
   );

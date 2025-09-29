@@ -1,239 +1,286 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  ArrowLeft,
+  Clock,
+  Calendar,
+  CheckCircle,
+  Target,
+  Brain,
+  FileText,
+  Award,
+  Home,
+  BarChart3,
+  User,
+  Lightbulb
+} from 'lucide-react';
 
 export default function HistoryPage() {
-  const [activeTab, setActiveTab] = useState('activities');
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const tabs = [
-    { id: 'activities', label: 'Activities' },
-    { id: 'achievements', label: 'Achievements' },
-    { id: 'progress', label: 'Progress' },
-    { id: 'downloads', label: 'Downloads' }
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/auth/signin');
+    } else {
+      setIsLoading(false);
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const activities = [
+    {
+      id: 1,
+      type: 'skill_assessment',
+      title: 'Python Developer Assessment',
+      description: 'Completed advanced Python skills test',
+      date: '2024-09-29',
+      time: '10:30 AM',
+      status: 'completed',
+      score: 85,
+      icon: <Brain className="w-5 h-5 text-blue-500" />
+    },
+    {
+      id: 2,
+      type: 'career_analysis',
+      title: 'Career Path Analysis',
+      description: 'Analyzed career alignment for Full Stack Developer',
+      date: '2024-09-28',
+      time: '2:15 PM',
+      status: 'completed',
+      score: 92,
+      icon: <Target className="w-5 h-5 text-green-500" />
+    },
+    {
+      id: 3,
+      type: 'resume_scan',
+      title: 'Resume Analysis',
+      description: 'AI-powered resume analysis completed',
+      date: '2024-09-27',
+      time: '4:45 PM',
+      status: 'completed',
+      score: 78,
+      icon: <FileText className="w-5 h-5 text-purple-500" />
+    },
+    {
+      id: 4,
+      type: 'skill_assessment',
+      title: 'React Mastery Quiz',
+      description: 'Completed React fundamentals assessment',
+      date: '2024-09-26',
+      time: '9:20 AM',
+      status: 'completed',
+      score: 88,
+      icon: <Brain className="w-5 h-5 text-blue-500" />
+    },
+    {
+      id: 5,
+      type: 'achievement',
+      title: 'Skill Milestone Reached',
+      description: 'Reached 1000+ skill points milestone',
+      date: '2024-09-25',
+      time: '6:30 PM',
+      status: 'completed',
+      score: null,
+      icon: <Award className="w-5 h-5 text-yellow-500" />
+    }
+  ];
+
+  const stats = [
+    {
+      title: 'Total Assessments',
+      value: '12',
+      change: '+3 this week',
+      icon: <CheckCircle className="w-6 h-6 text-green-500" />
+    },
+    {
+      title: 'Average Score',
+      value: '87%',
+      change: '+5% improvement',
+      icon: <Target className="w-6 h-6 text-blue-500" />
+    },
+    {
+      title: 'Skills Analyzed',
+      value: '25',
+      change: '+8 new skills',
+      icon: <Brain className="w-6 h-6 text-purple-500" />
+    },
+    {
+      title: 'Days Active',
+      value: '15',
+      change: '7-day streak',
+      icon: <Calendar className="w-6 h-6 text-orange-500" />
+    }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            History & Records
-          </h1>
-          <p className="text-xl text-gray-600">
-            Track your learning journey and achievements
-          </p>
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </button>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 bg-gray-100 rounded-lg px-4 py-2">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="text-sm">
+                <div className="font-medium text-gray-900">{session.user?.name || 'User'}</div>
+                <div className="text-gray-500">{session.user?.email}</div>
+              </div>
+            </div>
+          </div>
         </div>
+      </header>
 
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-gray-900 text-white min-h-[calc(100vh-73px)]">
+          <div className="p-6">
+            {/* Logo */}
+            <div className="flex items-center space-x-3 mb-8">
+              <img
+                src="/images/even.png"
+                alt="FutureFit Logo"
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-xl font-bold">FutureFit</span>
+            </div>
+
+            {/* Navigation */}
+            <nav className="space-y-2">
+              <Link href="/dashboard" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Home className="w-5 h-5" />
+                <span>Dashboard</span>
+              </Link>
+              <Link href="/analyze" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <BarChart3 className="w-5 h-5" />
+                <span>Skills</span>
+              </Link>
+              <Link href="/career-decision" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Target className="w-5 h-5" />
+                <span>Career Path</span>
+              </Link>
+              <Link href="/resume-analyzer" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <FileText className="w-5 h-5" />
+                <span>Resume Scan</span>
+              </Link>
+              <Link href="/insights" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
+                <Lightbulb className="w-5 h-5" />
+                <span>Insights</span>
+              </Link>
+              <Link href="/history" className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
+                <Clock className="w-5 h-5" />
+                <span>History</span>
+              </Link>
             </nav>
           </div>
+        </aside>
 
-          <div className="p-6">
-            {activeTab === 'activities' && <ActivitiesTab />}
-            {activeTab === 'achievements' && <AchievementsTab />}
-            {activeTab === 'progress' && <ProgressTab />}
-            {activeTab === 'downloads' && <DownloadsTab />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ActivitiesTab() {
-  const activities = [
-    { date: '2024-09-29', activity: 'Completed React Hooks tutorial', type: 'learning', duration: '2h 30m' },
-    { date: '2024-09-28', activity: 'Built portfolio website', type: 'project', duration: '4h 15m' },
-    { date: '2024-09-27', activity: 'Attended JavaScript meetup', type: 'event', duration: '1h 30m' },
-    { date: '2024-09-26', activity: 'Solved 5 coding challenges', type: 'practice', duration: '1h 45m' },
-    { date: '2024-09-25', activity: 'Read TypeScript documentation', type: 'learning', duration: '1h 20m' }
-  ];
-
-  const [filter, setFilter] = useState('all');
-
-  const filteredActivities = activities.filter(activity => 
-    filter === 'all' || activity.type === filter
-  );
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">Recent Activities</h2>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="all">All Activities</option>
-          <option value="learning">Learning</option>
-          <option value="project">Projects</option>
-          <option value="practice">Practice</option>
-          <option value="event">Events</option>
-        </select>
-      </div>
-
-      <div className="space-y-4">
-        {filteredActivities.map((activity, index) => (
-          <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-            <div className={`w-3 h-3 rounded-full ${
-              activity.type === 'learning' ? 'bg-blue-500' :
-              activity.type === 'project' ? 'bg-green-500' :
-              activity.type === 'practice' ? 'bg-yellow-500' : 'bg-purple-500'
-            }`}></div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900">{activity.activity}</h3>
-              <p className="text-sm text-gray-600">{activity.date}</p>
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Activity History</h1>
+              <p className="text-gray-600">Track your learning progress and achievements over time</p>
             </div>
-            <div className="text-right">
-              <span className="text-sm font-medium text-gray-900">{activity.duration}</span>
-              <p className="text-xs text-gray-500 capitalize">{activity.type}</p>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      {stat.icon}
+                    </div>
+                    <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{stat.title}</h3>
+                  <p className="text-sm text-green-600">{stat.change}</p>
+                </motion.div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-function AchievementsTab() {
-  const achievements = [
-    { title: 'JavaScript Master', date: '2024-09-20', badge: '🏆', description: 'Completed advanced JavaScript course' },
-    { title: 'React Developer', date: '2024-09-15', badge: '⭐', description: 'Built 3 React applications' },
-    { title: 'Code Warrior', date: '2024-09-10', badge: '⚔️', description: 'Solved 100 coding challenges' },
-    { title: 'Team Player', date: '2024-09-05', badge: '🤝', description: 'Collaborated on open source project' },
-    { title: 'Speed Learner', date: '2024-08-30', badge: '🚀', description: 'Completed course in record time' }
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Achievements</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {achievements.map((achievement, index) => (
-          <div key={index} className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-lg border border-yellow-200">
-            <div className="text-center">
-              <div className="text-4xl mb-3">{achievement.badge}</div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{achievement.title}</h3>
-              <p className="text-sm text-gray-600 mb-3">{achievement.description}</p>
-              <p className="text-xs text-gray-500">{achievement.date}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProgressTab() {
-  const progressData = [
-    { skill: 'JavaScript', startLevel: 60, currentLevel: 85, targetLevel: 90 },
-    { skill: 'React', startLevel: 40, currentLevel: 75, targetLevel: 85 },
-    { skill: 'Node.js', startLevel: 30, currentLevel: 65, targetLevel: 80 },
-    { skill: 'TypeScript', startLevel: 20, currentLevel: 50, targetLevel: 75 },
-    { skill: 'Python', startLevel: 70, currentLevel: 80, targetLevel: 90 }
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Skill Progress</h2>
-      
-      <div className="space-y-6">
-        {progressData.map((item, index) => (
-          <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">{item.skill}</h3>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-blue-600">{item.currentLevel}%</span>
-                <p className="text-sm text-gray-500">Target: {item.targetLevel}%</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Start: {item.startLevel}%</span>
-                <span>Current: {item.currentLevel}%</span>
-                <span>Target: {item.targetLevel}%</span>
-              </div>
-              
-              <div className="relative">
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
-                    className="bg-blue-500 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${item.currentLevel}%` }}
-                  ></div>
-                </div>
-                <div 
-                  className="absolute top-0 h-3 w-1 bg-red-500"
-                  style={{ left: `${item.targetLevel}%` }}
-                ></div>
-              </div>
-              
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>+{item.currentLevel - item.startLevel}% improvement</span>
-                <span>{item.targetLevel - item.currentLevel}% to go</span>
+            {/* Activity Timeline */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+              <div className="space-y-4">
+                {activities.map((activity, index) => (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900">{activity.title}</h3>
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          <Calendar className="w-4 h-4" />
+                          <span>{activity.date}</span>
+                          <Clock className="w-4 h-4 ml-2" />
+                          <span>{activity.time}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-600 mb-2">{activity.description}</p>
+                      <div className="flex items-center space-x-4">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          activity.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {activity.status}
+                        </span>
+                        {activity.score && (
+                          <span className="text-sm font-medium text-gray-700">
+                            Score: {activity.score}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DownloadsTab() {
-  const downloads = [
-    { name: 'JavaScript Cheat Sheet', date: '2024-09-29', type: 'PDF', size: '2.3 MB' },
-    { name: 'React Best Practices', date: '2024-09-28', type: 'PDF', size: '1.8 MB' },
-    { name: 'Portfolio Template', date: '2024-09-27', type: 'ZIP', size: '15.2 MB' },
-    { name: 'Code Snippets Collection', date: '2024-09-26', type: 'ZIP', size: '5.7 MB' },
-    { name: 'Learning Roadmap', date: '2024-09-25', type: 'PDF', size: '3.1 MB' }
-  ];
-
-  return (
-    <div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Downloads</h2>
-      
-      <div className="space-y-4">
-        {downloads.map((download, index) => (
-          <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-4">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                download.type === 'PDF' ? 'bg-red-100' : 'bg-blue-100'
-              }`}>
-                <span className={`text-sm font-semibold ${
-                  download.type === 'PDF' ? 'text-red-600' : 'text-blue-600'
-                }`}>
-                  {download.type}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{download.name}</h3>
-                <p className="text-sm text-gray-600">{download.date}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="text-sm font-medium text-gray-900">{download.size}</span>
-              <button className="ml-4 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
-                Download
-              </button>
-            </div>
-          </div>
-        ))}
+        </main>
       </div>
     </div>
   );

@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token.id && session.user) {
+      if (token.id && session?.user) {
         (session.user as any).id = token.id as string;
       }
       return session;
@@ -109,7 +109,7 @@ export const authOptions: NextAuthOptions = {
       console.log('User signed in:', { user: user.email, provider: account?.provider });
     },
     async signOut({ session, token }) {
-      console.log('User signed out:', { user: session?.user?.email });
+      console.log('User signed out:', { user: session?.user?.email || 'unknown' });
     },
     async session({ session, token }) {
       // Handle session events
