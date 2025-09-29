@@ -1,0 +1,43 @@
+[
+  {
+    "id": "career_1759059300010_msv4p5tqs",
+    "userId": "user_1759059297747",
+    "timestamp": "2025-09-28T11:35:00.010Z",
+    "answers": {
+      "passion-discovery": "problem-solving",
+      "technology-interest": "data-processing",
+      "work-environment": "collaborative-office",
+      "career-goals": "entrepreneur"
+    },
+    "recommendedRoles": [
+      {
+        "id": "frontend-developer",
+        "title": "Frontend Developer",
+        "matchScore": 20,
+        "reasoning": "Based on your responses, you show strong alignment with Frontend Developer roles. Your interests and work style preferences match well with the requirements and opportunities in this field."
+      },
+      {
+        "id": "backend-developer",
+        "title": "Backend Developer",
+        "matchScore": 20,
+        "reasoning": "Based on your responses, you show strong alignment with Backend Developer roles. Your interests and work style preferences match well with the requirements and opportunities in this field."
+      },
+      {
+        "id": "fullstack-developer",
+        "title": "Full Stack Developer",
+        "matchScore": 20,
+        "reasoning": "Based on your responses, you show strong alignment with Full Stack Developer roles. Your interests and work style preferences match well with the requirements and opportunities in this field."
+      }
+    ],
+    "analysisData": {
+      "totalQuestions": 4,
+      "completionTime": 0,
+      "userPreferences": [
+        "problem-solving",
+        "data-processing",
+        "collaborative-office",
+        "entrepreneur"
+      ]
+    }
+  }
+]

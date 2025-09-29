@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  skillAnalyses SkillAnalysis[]
+  skillProgress SkillProgress[]
+  quizResults   QuizResult[]
+  learningPaths LearningPath[]
+
+  @@map("users")
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String
+  description String?
+  difficulty  String   // Beginner, Intermediate, Advanced
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  skillAnalyses SkillAnalysis[]
+  skillProgress SkillProgress[]
+  quizQuestions QuizQuestion[]
+  learningPaths LearningPath[]
+
+  @@map("skills")
+}
+
+model SkillAnalysis {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  level       Int      // 1-100
+  confidence  Int      // 1-100
+  experience  String   // Years of experience
+  lastUsed    DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@map("skill_analyses")
+}
+
+model SkillProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  currentLevel Int     // 1-100
+  targetLevel  Int     // 1-100
+  progress     Float   // 0-100
+  completedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@map("skill_progress")
+}
+
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  skillId     String
+  question    String
+  type        String   // multiple_choice, rating, text
+  options     String?    // For multiple choice questions (JSON string)
+  correctAnswer String?  // Correct answer data (JSON string)
+  difficulty  String   // Beginner, Intermediate, Advanced
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  skill       Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  quizResults QuizResult[]
+
+  @@map("quiz_questions")
+}
+
+model QuizResult {
+  id          String   @id @default(cuid())
+  userId      String
+  questionId  String
+  answer      String     // User's answer (JSON string)
+  isCorrect   Boolean?
+  timeSpent   Int?     // Time in seconds
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_results")
+}
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  title       String
+  description String?
+  status      String   // not_started, in_progress, completed
+  progress    Float    // 0-100
+  estimatedHours Int?
+  actualHours    Int?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@map("learning_paths")
+}
+
+model AnalysisSession {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionType String   // skill_analysis, career_quiz, resume_analysis
+  data        String     // Session data (JSON string)
+  results     String?    // Analysis results (JSON string)
+  status      String   // in_progress, completed, failed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("analysis_sessions")
+}
