@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Zap } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { Menu, X, Zap, User, LogOut } from 'lucide-react';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -14,6 +16,10 @@ const Navigation = () => {
     { name: 'Skill Analysis', href: '/analyze' },
     { name: 'Dashboard', href: '/dashboard' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-50/95 backdrop-blur-md">
@@ -51,18 +57,40 @@ const Navigation = () => {
 
           {/* Right Side - Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/auth/signin"
-              className="text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-black text-white px-6 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 transform hover:scale-105"
-            >
-              Sign Up
-            </Link>
+            {status === 'loading' ? (
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+            ) : session ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <User className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-600">
+                    {session.user?.name || session.user?.email}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-black text-white px-6 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 transform hover:scale-105"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,20 +117,44 @@ const Navigation = () => {
                 </Link>
               ))}
               <div className="pt-4 border-t border-gray-200 space-y-3">
-                <Link
-                  href="/auth/signin"
-                  className="block text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block w-full bg-black text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
+                {status === 'loading' ? (
+                  <div className="w-full h-8 bg-gray-200 rounded animate-pulse"></div>
+                ) : session ? (
+                  <>
+                    <div className="flex items-center space-x-2 py-2">
+                      <User className="w-4 h-4 text-gray-600" />
+                      <span className="text-sm text-gray-600">
+                        {session.user?.name || session.user?.email}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300 py-2"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signin"
+                      className="block text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="block w-full bg-black text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 text-center"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

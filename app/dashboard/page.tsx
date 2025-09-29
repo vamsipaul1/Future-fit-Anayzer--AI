@@ -20,11 +20,10 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session) {
+    // Only redirect if we're sure there's no session
+    if (status === 'unauthenticated') {
       router.push('/auth/signin');
-    } else {
+    } else if (status === 'authenticated') {
       setIsLoading(false);
     }
   }, [session, status, router]);
@@ -33,14 +32,19 @@ export default function DashboardPage() {
     await signOut({ callbackUrl: '/' });
   };
 
+  // Show loading while checking authentication
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
+  // Don't render anything if not authenticated (will redirect)
   if (!session) {
     return null;
   }

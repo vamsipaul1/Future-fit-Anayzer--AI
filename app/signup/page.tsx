@@ -30,7 +30,11 @@ export default function SignUpPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/dashboard' });
+      // Get callback URL from search params
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/dashboard';
+      
+      await signIn('google', { callbackUrl });
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
     } finally {

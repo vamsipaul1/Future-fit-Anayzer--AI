@@ -18,7 +18,10 @@ export default function SignInPage() {
     // Check if user is already signed in
     getSession().then((session) => {
       if (session) {
-        router.push('/dashboard');
+        // Get callback URL from search params
+        const urlParams = new URLSearchParams(window.location.search);
+        const callbackUrl = urlParams.get('callbackUrl') || '/dashboard';
+        router.push(callbackUrl);
       }
     });
   }, [router]);
@@ -37,7 +40,11 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/dashboard' });
+      // Get callback URL from search params
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/dashboard';
+      
+      await signIn('google', { callbackUrl });
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
     } finally {
@@ -51,17 +58,21 @@ export default function SignInPage() {
     setError('');
 
     try {
+      // Get callback URL from search params
+      const urlParams = new URLSearchParams(window.location.search);
+      const callbackUrl = urlParams.get('callbackUrl') || '/dashboard';
+      
       const result = await signIn('credentials', {
         email,
         password,
-        callbackUrl: '/dashboard',
+        callbackUrl,
         redirect: false
       });
 
       if (result?.error) {
         setError('Invalid email or password');
       } else if (result?.ok) {
-        router.push('/dashboard');
+        router.push(callbackUrl);
       }
     } catch (error) {
       setError('An error occurred during sign in');
