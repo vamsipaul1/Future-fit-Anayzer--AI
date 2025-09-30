@@ -1,0 +1,140 @@
+{
+  "assessmentId": "cmg687a6500a644kvgseu8hy6",
+  "anonymizedUserLabel": "u_cmg687a6",
+  "overall": {
+    "questionsAttempted": 20,
+    "correctAnswers": 14,
+    "percentCorrect": 70.0,
+    "timeSpentMs": 1200000
+  },
+  "perSkill": [
+    {
+      "skillId": "cmg635wj80003r9hz2chf3sw1",
+      "skillName": "HTML / CSS / JavaScript",
+      "questionsAttempted": 5,
+      "correctAnswers": 3,
+      "percentCorrect": 60.0,
+      "avgResponseTimeMs": 41000,
+      "confidenceScore": 0.56,
+      "recommendations": [
+        {
+          "type": "course",
+          "title": "Fundamentals of HTML / CSS / JavaScript",
+          "url": "https://example.com/courses/html-css-js-fundamentals",
+          "priority": 1
+        },
+        {
+          "type": "video",
+          "title": "HTML / CSS / JavaScript Basics Tutorial",
+          "url": "https://example.com/videos/html-css-js-basics",
+          "priority": 2
+        },
+        {
+          "type": "article",
+          "title": "Getting Started with HTML / CSS / JavaScript",
+          "url": "https://example.com/articles/html-css-js-getting-started",
+          "priority": 3
+        }
+      ]
+    },
+    {
+      "skillId": "cmg635wlq0009r9hzjsthr20r",
+      "skillName": "Motion UI",
+      "questionsAttempted": 5,
+      "correctAnswers": 4,
+      "percentCorrect": 80.0,
+      "avgResponseTimeMs": 38000,
+      "confidenceScore": 0.72,
+      "recommendations": [
+        {
+          "type": "question",
+          "title": "Practice Questions: Motion UI",
+          "url": "https://example.com/practice/motion-ui",
+          "priority": 1
+        },
+        {
+          "type": "video",
+          "title": "Advanced Motion UI Concepts",
+          "url": "https://example.com/videos/motion-ui-advanced",
+          "priority": 2
+        }
+      ]
+    },
+    {
+      "skillId": "cmg635wiu0002r9hzl0j4u90k",
+      "skillName": "Machine Learning",
+      "questionsAttempted": 5,
+      "correctAnswers": 4,
+      "percentCorrect": 80.0,
+      "avgResponseTimeMs": 52000,
+      "confidenceScore": 0.68,
+      "recommendations": [
+        {
+          "type": "question",
+          "title": "Practice Questions: Machine Learning",
+          "url": "https://example.com/practice/machine-learning",
+          "priority": 1
+        },
+        {
+          "type": "video",
+          "title": "Advanced Machine Learning Concepts",
+          "url": "https://example.com/videos/machine-learning-advanced",
+          "priority": 2
+        }
+      ]
+    },
+    {
+      "skillId": "cmg635wj80003r9hz2chf3sw2",
+      "skillName": "React.js",
+      "questionsAttempted": 5,
+      "correctAnswers": 3,
+      "percentCorrect": 60.0,
+      "avgResponseTimeMs": 45000,
+      "confidenceScore": 0.58,
+      "recommendations": [
+        {
+          "type": "course",
+          "title": "Fundamentals of React.js",
+          "url": "https://example.com/courses/react-js-fundamentals",
+          "priority": 1
+        },
+        {
+          "type": "video",
+          "title": "React.js Basics Tutorial",
+          "url": "https://example.com/videos/react-js-basics",
+          "priority": 2
+        },
+        {
+          "type": "article",
+          "title": "Getting Started with React.js",
+          "url": "https://example.com/articles/react-js-getting-started",
+          "priority": 3
+        }
+      ]
+    }
+  ],
+  "perDomain": [
+    {
+      "domainId": "cmg635wj80003r9hz2chf3sw1",
+      "domainName": "Software & Web Development",
+      "percentCorrect": 60.0,
+      "totalQuestions": 10,
+      "correctAnswers": 6
+    },
+    {
+      "domainId": "cmg635wlq0009r9hzjsthr20r",
+      "domainName": "UI/UX & Design",
+      "percentCorrect": 80.0,
+      "totalQuestions": 5,
+      "correctAnswers": 4
+    },
+    {
+      "domainId": "cmg635wiu0002r9hzl0j4u90k",
+      "domainName": "Data & AI",
+      "percentCorrect": 80.0,
+      "totalQuestions": 5,
+      "correctAnswers": 4
+    }
+  ],
+  "generatedAt": "2025-09-30T10:30:00.000Z"
+}

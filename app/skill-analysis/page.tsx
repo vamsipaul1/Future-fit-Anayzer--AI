@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, 
   Target, 
@@ -12,399 +12,1133 @@ import {
   BarChart3,
   Lightbulb,
   Users,
-  Award
+  Award,
+  Clock,
+  ChevronRight,
+  ChevronLeft,
+  Play,
+  RotateCcw,
+  Download,
+  Home
 } from 'lucide-react';
+import AuthGuard from '../../components/AuthGuard';
 
-interface SkillAnalysisResult {
-  overallScore: number;
-  strengths: Array<{
-    category: string;
-    skills: string[];
-    score: number;
-  }>;
-  improvements: string[];
-  recommendations: string[];
-  careerPaths: Array<{
-    title: string;
-    match: number;
-  }>;
+// Types
+interface Domain {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string;
+  roles: string[];
+  skillCount: number;
 }
 
-export default function SkillAnalysisPage() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [experience, setExperience] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<SkillAnalysisResult | null>(null);
+interface Skill {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+}
 
-  const steps = [
-    { id: 1, title: 'Select Skills', description: 'Choose your current skills' },
-    { id: 2, title: 'Add Experience', description: 'Tell us about your experience' },
-    { id: 3, title: 'Analysis', description: 'Get your personalized results' }
-  ];
+interface DomainWithSkills extends Domain {
+  skills: {
+    BEGINNER: Skill[];
+    INTERMEDIATE: Skill[];
+    ADVANCED: Skill[];
+  };
+}
 
-  const allSkills = [
-    // Frontend
-    'HTML', 'CSS', 'JavaScript', 'React', 'Vue', 'Angular', 'TypeScript', 'SASS',
-    // Backend  
-    'Node.js', 'Python', 'Java', 'PHP', 'Express', 'Django', 'Spring', 'Laravel',
-    // Database
-    'SQL', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase',
-    // DevOps
-    'Docker', 'AWS', 'Git', 'CI/CD', 'Kubernetes', 'Jenkins', 'Terraform',
-    // Design
-    'Figma', 'Photoshop', 'UI/UX', 'Wireframing', 'Sketch', 'Adobe XD',
-    // Data Science
-    'Machine Learning', 'Statistics', 'Pandas', 'NumPy', 'TensorFlow', 'PyTorch',
-    // Mobile
-    'React Native', 'Flutter', 'Swift', 'Kotlin', 'iOS', 'Android',
-    // Other
-    'GraphQL', 'REST APIs', 'Microservices', 'Agile', 'Scrum', 'Project Management'
-  ];
+interface SelectedSkill {
+  key: string;
+  name: string;
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  userLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+}
 
-  const handleSkillToggle = (skill: string) => {
-    setSelectedSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
-    );
+interface Question {
+  id: string;
+  skillKey: string;
+  skillLevel: string;
+  question: string;
+  type: 'MCQ' | 'ShortAnswer' | 'FillInBlank' | 'Ability' | 'Scenario' | 'Code';
+  options?: string[];
+  correctAnswer?: string;
+  difficulty: string;
+  timeLimit: number;
+  responseType?: string;
+}
+
+interface QuizData {
+  assessmentId: string;
+  domain: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  questions: Question[];
+  totalQuestions: number;
+  estimatedTime: number;
+  generatedAt: string;
+}
+
+interface AssessmentResult {
+  assessmentId: string;
+  overallScore: number;
+  skillScores: Record<string, { scores: number[], average: number, level: string }>;
+  recommendations: Array<{
+    skill: string;
+    currentLevel: string;
+    score: number;
+    recommendation: string;
+  }>;
+  completedAt: string;
+}
+
+// Components
+// Domain icons mapping
+const domainIcons = {
+  'cloud-infrastructure': '☁️',
+  'cybersecurity': '🔒',
+  'data-ai': '🤖',
+  'software-web': '💻',
+  'programming': '⚡',
+  'mobile-development': '📱',
+  'product-management': '📊',
+  'blockchain-web3': '⛓️',
+  'devops-automation': '🔧',
+  'ui-ux-design': '🎨',
+  'networking-systems': '🌐',
+  'business-analytics': '📈',
+  'game-development': '🎮'
+};
+
+// Domain convenience info (simplified)
+const domainConvenience = {
+  'cloud-infrastructure': { skills: '8 skills' },
+  'cybersecurity': { skills: '8 skills' },
+  'data-ai': { skills: '8 skills' },
+  'software-web': { skills: '8 skills' },
+  'programming': { skills: '8 skills' },
+  'mobile-development': { skills: '8 skills' },
+  'product-management': { skills: '8 skills' },
+  'blockchain-web3': { skills: '8 skills' },
+  'devops-automation': { skills: '8 skills' },
+  'ui-ux-design': { skills: '8 skills' },
+  'networking-systems': { skills: '8 skills' },
+  'business-analytics': { skills: '8 skills' },
+  'game-development': { skills: '8 skills' }
+};
+
+const DomainCard = ({ domain, onSelect }: { domain: Domain; onSelect: (domain: Domain) => void }) => {
+  const convenience = domainConvenience[domain.slug as keyof typeof domainConvenience] || { skills: '8 skills' };
+  const domainIcon = domainIcons[domain.slug as keyof typeof domainIcons] || '💼';
+
+  return (
+    <div
+      className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group border border-pink-200 hover:border-pink-300 overflow-hidden p-6"
+      onClick={() => onSelect(domain)}
+    >
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      <div className="text-center relative z-10">
+        <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-pink-500 via-purple-500 to-pink-600 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 text-3xl shadow-lg">
+          {domainIcon}
+        </div>
+        
+        <h3 className="font-bold text-black text-lg group-hover:text-pink-600 transition-colors duration-300 mb-2">
+          {domain.name}
+        </h3>
+        
+        <p className="text-sm text-gray-600 font-medium">
+          {convenience.skills}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const SkillPill = ({ 
+  skill, 
+  isSelected, 
+  userLevel, 
+  onSelect, 
+  onLevelChange 
+}: {
+  skill: Skill;
+  isSelected: boolean;
+  userLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  onSelect: (skill: Skill) => void;
+  onLevelChange: (skill: Skill, level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') => void;
+}) => {
+  const levelColors = {
+    BEGINNER: 'bg-green-100 text-green-800 border-green-200',
+    INTERMEDIATE: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    ADVANCED: 'bg-red-100 text-red-800 border-red-200'
   };
 
-  const handleAnalyze = async () => {
-    if (selectedSkills.length === 0) return;
-
-    setIsAnalyzing(true);
-    try {
-      const response = await fetch('/api/skill-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          skills: selectedSkills,
-          experience: experience,
-          userId: 'user_' + Date.now()
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setAnalysisResult(data.analysis);
-        setCurrentStep(3);
-      } else {
-        console.error('Analysis failed:', data.error);
-      }
-    } catch (error) {
-      console.error('Error analyzing skills:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const nextStep = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+  const userLevelColors = {
+    BEGINNER: 'bg-green-500',
+    INTERMEDIATE: 'bg-yellow-500',
+    ADVANCED: 'bg-red-500'
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 px-6 py-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">AI Skill Analysis</h1>
-              <p className="text-gray-600">Get personalized insights about your skills</p>
-            </div>
+    <div
+      className={`p-3 rounded-xl border-2 transition-all duration-300 cursor-pointer group relative overflow-hidden ${
+        isSelected
+          ? 'border-blue-500 bg-blue-50 shadow-lg'
+          : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+      }`}
+      onClick={() => onSelect(skill)}
+    >
+      {/* Animated background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 to-purple-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-2">
+          <motion.h4 
+            className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors"
+            whileHover={{ scale: 1.05 }}
+          >
+            {skill.name}
+          </motion.h4>
+          <div className="flex items-center space-x-2">
+            <motion.span 
+              className={`px-2 py-1 rounded-full text-xs font-bold ${levelColors[skill.level]} shadow-sm`}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+            >
+              {skill.level.charAt(0)}
+            </motion.span>
+            {isSelected && (
+              <motion.div 
+                className={`w-2 h-2 rounded-full ${userLevelColors[userLevel]} shadow-sm`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500 }}
+              />
+            )}
           </div>
+        </div>
+
+        <motion.p 
+          className="text-xs text-gray-600 mb-2 line-clamp-2 group-hover:text-gray-700 transition-colors"
+          initial={{ opacity: 0.8 }}
+          whileHover={{ opacity: 1 }}
+        >
+          {skill.description}
+        </motion.p>
+
+        {isSelected && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -10 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="space-y-2"
+          >
+            <motion.p 
+              className="text-xs font-medium text-gray-600"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              Your Level:
+            </motion.p>
+            <div className="flex space-x-1">
+              {(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const).map((level, index) => (
+                <motion.button
+                  key={level}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLevelChange(skill, level);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-all duration-200 ${
+                    userLevel === level
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:shadow-sm'
+                  }`}
+                >
+                  {level.charAt(0)}
+                </motion.button>
+                ))}
+              </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const QuestionCard = ({ 
+  question, 
+  currentIndex, 
+  totalQuestions, 
+  onAnswer, 
+  onNext, 
+  onPrevious 
+}: {
+  question: Question;
+  currentIndex: number;
+  totalQuestions: number;
+  onAnswer: (answer: string) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+}) => {
+  const [answer, setAnswer] = useState('');
+  const [selectedOption, setSelectedOption] = useState('');
+  const [rating, setRating] = useState(5); // Default rating for scale questions
+
+  const handleSubmit = () => {
+    let finalAnswer;
+    if (question.type === 'MCQ') {
+      finalAnswer = selectedOption;
+    } else if (question.type === 'Ability' && question.responseType === 'scale') {
+      finalAnswer = rating.toString();
+    } else {
+      finalAnswer = answer;
+    }
+    
+    onAnswer(finalAnswer);
+    setAnswer('');
+    setSelectedOption('');
+    setRating(5); // Reset rating
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
+      {/* Progress */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-500 font-medium">
+            Question {currentIndex + 1} of {totalQuestions}
+          </span>
+          <span className="text-sm text-gray-500 font-medium">
+            {question.difficulty}
+          </span>
+            </div>
+        
+        {/* Interactive Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+          <div 
+            className="h-3 rounded-full relative transition-all duration-500"
+            style={{ 
+              width: `${((currentIndex + 1) / totalQuestions) * 100}%`,
+              background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)',
+              boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)'
+            }}
+          />
+        </div>
+
+        {/* Progress percentage text */}
+        <div className="text-center mt-2">
+          <span className="text-xs text-gray-400 font-medium">
+            {Math.round(((currentIndex + 1) / totalQuestions) * 100)}% Complete
+          </span>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-8">
-        {/* Progress Steps */}
+      {/* Question */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
-                  currentStep >= step.id 
-                    ? 'bg-blue-600 border-blue-600 text-white' 
-                    : 'border-gray-300 text-gray-500'
-                }`}>
-                  {step.id}
-                </div>
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.id ? 'text-blue-600' : 'text-gray-500'
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">{question.question}</h3>
+        
+        {question.type === 'MCQ' && question.options && (
+          <div className="space-y-3">
+            {question.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedOption(option)}
+                className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-300 ${
+                  selectedOption === option
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                    selectedOption === option
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-gray-300'
                   }`}>
-                    {step.title}
-                  </p>
-                  <p className="text-xs text-gray-500">{step.description}</p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-6 ${
-                    currentStep > step.id ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}></div>
+                    {selectedOption === option && (
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
                 )}
               </div>
+                  <span className="text-gray-800 font-medium">{option}</span>
+                </div>
+              </button>
             ))}
           </div>
+        )}
+
+        {(question.type === 'ShortAnswer' || question.type === 'FillInBlank' || question.type === 'Code') && (
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder={
+              question.type === 'Code' ? 'Write your code explanation or pseudocode...' : 
+              question.type === 'FillInBlank' ? 'Fill in the blank...' :
+              'Write your answer...'
+            }
+            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all duration-300"
+            rows={6}
+          />
+        )}
+
+        {/* Rating Scale for Ability Questions */}
+        {question.type === 'Ability' && question.responseType === 'scale' && (
+              <div className="space-y-6">
+            {/* Rating Display */}
+            <div className="text-center">
+            <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="text-6xl font-bold text-blue-600 mb-2"
+              >
+                {rating}
+              </motion.div>
+              <p className="text-lg text-gray-600">out of 10</p>
         </div>
 
-        {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {currentStep === 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Select Your Skills
-              </h2>
-              <p className="text-gray-600 mb-8">
-                Choose all the skills you currently have or are learning. This helps us provide accurate analysis.
-              </p>
+            {/* Rating Slider */}
+            <div className="px-4">
+              <style jsx>{`
+                .slider {
+                  -webkit-appearance: none;
+                  appearance: none;
+                  height: 12px;
+                  border-radius: 6px;
+                  outline: none;
+                }
+                .slider::-webkit-slider-thumb {
+                  -webkit-appearance: none;
+                  appearance: none;
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 50%;
+                  background: #3b82f6;
+                  cursor: pointer;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                }
+                .slider::-moz-range-thumb {
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 50%;
+                  background: #3b82f6;
+                  cursor: pointer;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                }
+              `}</style>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={rating}
+                onChange={(e) => setRating(parseInt(e.target.value))}
+                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                style={{
+                  background: `linear-gradient(to right, #3b82f6 0%, #8b5cf6 ${(rating - 1) * 11.11}%, #e5e7eb ${(rating - 1) * 11.11}%, #e5e7eb 100%)`
+                }}
+              />
               
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
-                {allSkills.map((skill) => (
-                  <button
-                    key={skill}
-                    onClick={() => handleSkillToggle(skill)}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      selectedSkills.includes(skill)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {skill}
-                  </button>
-                ))}
+              {/* Scale Labels */}
+              <div className="flex justify-between mt-2 text-sm text-gray-500">
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+                <span>6</span>
+                <span>7</span>
+                <span>8</span>
+                <span>9</span>
+                <span>10</span>
               </div>
+            </div>
 
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">
-                  Selected: {selectedSkills.length} skills
-                </p>
+            {/* Rating Buttons */}
+            <div className="grid grid-cols-5 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                 <button
-                  onClick={nextStep}
-                  disabled={selectedSkills.length === 0}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                  key={value}
+                  onClick={() => setRating(value)}
+                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 ${
+                    rating === value
+                      ? 'bg-blue-500 text-white shadow-lg scale-105'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {value}
                 </button>
+              ))}
               </div>
-            </motion.div>
-          )}
 
-          {currentStep === 2 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Tell Us About Your Experience
-              </h2>
-              <p className="text-gray-600 mb-8">
-                Help us understand your background to provide more accurate recommendations.
+            {/* Rating Description */}
+            <div className="text-center">
+              <p className="text-sm text-gray-500">
+                {rating <= 3 && "Beginner level"}
+                {rating >= 4 && rating <= 6 && "Intermediate level"}
+                {rating >= 7 && rating <= 8 && "Advanced level"}
+                {rating >= 9 && "Expert level"}
               </p>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Years of Experience
-                  </label>
-                  <select
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    aria-label="Select your experience level"
-                  >
-                    <option value="">Select your experience level</option>
-                    <option value="0-1">0-1 years (Beginner)</option>
-                    <option value="1-3">1-3 years (Junior)</option>
-                    <option value="3-5">3-5 years (Mid-level)</option>
-                    <option value="5-10">5-10 years (Senior)</option>
-                    <option value="10+">10+ years (Expert)</option>
-                  </select>
                 </div>
-
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 mb-2">Selected Skills:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSkills.map((skill) => (
-                      <span key={skill} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+          </div>
+        )}
               </div>
 
-              <div className="flex justify-between items-center mt-8">
-                <button
-                  onClick={prevStep}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={handleAnalyze}
-                  disabled={!experience}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-                >
-                  <Brain className="w-4 h-4" />
-                  <span>Analyze My Skills</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onPrevious}
+          disabled={currentIndex === 0}
+          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Previous</span>
+        </button>
 
-          {currentStep === 3 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {isAnalyzing ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Brain className="w-8 h-8 text-blue-600 animate-pulse" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Analyzing Your Skills...
-                  </h3>
-                  <p className="text-gray-600">
-                    Our AI is processing your skills and generating personalized insights.
-                  </p>
-                </div>
-              ) : analysisResult ? (
-                <div className="space-y-8">
+        <button
+          onClick={handleSubmit}
+          disabled={
+            question.type === 'MCQ' ? !selectedOption : 
+            question.type === 'Ability' && question.responseType === 'scale' ? false :
+            !answer.trim()
+          }
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+        >
+          <span>{currentIndex === totalQuestions - 1 ? 'Finish Quiz' : 'Next'}</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ResultsPage = ({ 
+  result, 
+  onRetake, 
+  onNewDomain 
+}: {
+  result: AssessmentResult;
+  onRetake: () => void;
+  onNewDomain: () => void;
+}) => {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
                   <div className="text-center">
+        <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Award className="w-10 h-10 text-white" />
+        </div>
+        
                     <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Your Skill Analysis Results
-                    </h2>
-                    <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full">
-                      <Award className="w-6 h-6 text-blue-600 mr-2" />
-                      <span className="text-2xl font-bold text-blue-600">
-                        {analysisResult.overallScore}% Overall Score
+          Assessment Complete!
+              </h2>
+        
+        <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full">
+          <span className={`text-3xl font-bold ${getScoreColor(result.overallScore)}`}>
+            {result.overallScore}%
+          </span>
+          <span className="ml-2 text-gray-600">Overall Score</span>
+        </div>
+                </div>
+
+      {/* Skill Scores */}
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <BarChart3 className="w-6 h-6 mr-2 text-blue-600" />
+          Skill Breakdown
+                      </h3>
+        
+                      <div className="space-y-4">
+          {Object.entries(result.skillScores).map(([skill, data]) => (
+            <motion.div
+                    key={skill}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="p-4 bg-gray-50 rounded-lg"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-gray-900 capitalize">
+                  {skill.replace('-', ' ')}
+                </h4>
+                <span className={`font-bold ${getScoreColor(data.average)}`}>
+                  {data.average}%
                       </span>
+                            </div>
+              
+              <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${data.average}%` }}
+                  transition={{ delay: 0.5, duration: 1 }}
+                  className={`h-3 rounded-full ${getScoreBgColor(data.average)}`}
+                />
+                          </div>
+
+              <div className="flex items-center justify-between text-sm text-gray-600">
+                <span>Level: {data.level}</span>
+                <span>{data.scores.length} questions</span>
+              </div>
+            </motion.div>
+                        ))}
+                </div>
+              </div>
+
+      {/* Recommendations */}
+      {result.recommendations.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Lightbulb className="w-6 h-6 mr-2 text-yellow-600" />
+            Learning Recommendations
+                      </h3>
+          
+          <div className="space-y-4">
+            {result.recommendations.map((rec, index) => (
+            <motion.div
+                key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400"
+              >
+                <div className="flex items-start space-x-3">
+                  <CheckCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div>
+                    <h4 className="font-semibold text-yellow-900 capitalize">
+                      {rec.skill.replace('-', ' ')}
+                    </h4>
+                    <p className="text-yellow-800 mt-1">{rec.recommendation}</p>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      Current Level: {rec.currentLevel} | Score: {rec.score}%
+                </div>
                     </div>
                   </div>
-
-                  {/* Strengths */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-green-50 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center">
-                        <TrendingUp className="w-5 h-5 mr-2" />
-                        Your Strengths
-                      </h3>
-                      <div className="space-y-4">
-                        {analysisResult.strengths.map((strength, index) => (
-                          <div key={index} className="bg-white p-4 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                              <h4 className="font-semibold text-green-800">{strength.category}</h4>
-                              <span className="text-sm font-bold text-green-600">{strength.score}%</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {strength.skills.map((skill) => (
-                                <span key={skill} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                                  {skill}
-                                </span>
+              </motion.div>
                               ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+      )}
 
-                    {/* Career Paths */}
-                    <div className="bg-purple-50 p-6 rounded-xl">
-                      <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
-                        <Target className="w-5 h-5 mr-2" />
-                        Recommended Career Paths
-                      </h3>
-                      <div className="space-y-3">
-                        {analysisResult.careerPaths.map((path, index) => (
-                          <div key={index} className="bg-white p-4 rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <h4 className="font-semibold text-purple-800">{path.title}</h4>
-                              <span className="text-sm font-bold text-purple-600">{path.match}% match</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                              <div 
-                                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-1000"
-                                style={{ width: `${path.match}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <button
+          onClick={onRetake}
+          className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-300 flex items-center justify-center space-x-2"
+        >
+          <RotateCcw className="w-5 h-5" />
+          <span>Retake Quiz</span>
+        </button>
+        
+        <button
+          onClick={onNewDomain}
+          className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2"
+        >
+          <Target className="w-5 h-5" />
+          <span>Try Another Domain</span>
+        </button>
+        
+        <button
+          onClick={() => window.location.href = '/dashboard'}
+          className="px-8 py-4 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-900 transition-all duration-300 flex items-center justify-center space-x-2"
+        >
+          <Home className="w-5 h-5" />
+          <span>Go to Dashboard</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
-                  {/* Recommendations */}
-                  <div className="bg-yellow-50 p-6 rounded-xl">
-                    <h3 className="text-xl font-bold text-yellow-900 mb-4 flex items-center">
-                      <Lightbulb className="w-5 h-5 mr-2" />
-                      Personalized Recommendations
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {analysisResult.recommendations.map((rec, index) => (
-                        <div key={index} className="flex items-start space-x-3">
-                          <CheckCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-yellow-800">{rec}</p>
+// Main Component
+export default function SkillAnalysisPage() {
+  const [currentStep, setCurrentStep] = useState<'domains' | 'skills' | 'quiz' | 'results'>('domains');
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState<DomainWithSkills | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
+  const [quizData, setQuizData] = useState<QuizData | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Array<{ questionId: string; answer: string; timeSpent: number }>>([]);
+  const [result, setResult] = useState<AssessmentResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load domains on mount
+  useEffect(() => {
+    const loadDomains = async () => {
+      try {
+        console.log('Loading domains...');
+        const response = await fetch('/api/skill-analysis/domains');
+        console.log('Domains response status:', response.status);
+        
+        if (!response.ok) {
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          try {
+            const errorData = await response.json();
+            console.error('Domains API Error:', {
+              status: response.status,
+              statusText: response.statusText,
+              errorData: errorData,
+              url: '/api/skill-analysis/domains'
+            });
+            errorMessage = errorData.message || errorData.code || errorMessage;
+          } catch (parseError) {
+            console.error('Failed to parse domains error response:', parseError);
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const data = await response.json();
+        console.log('Domains data:', data);
+        
+        if (data.status === 'success') {
+          setDomains(data.data);
+          console.log('Domains loaded successfully:', data.data.length);
+        } else {
+          setError(`Failed to load domains: ${data.message || 'Unknown error'}`);
+        }
+      } catch (err) {
+        console.error('Error loading domains:', err);
+        setError(`Failed to load domains: ${err instanceof Error ? err.message : 'Network error'}`);
+      }
+    };
+    loadDomains();
+  }, []);
+
+  const handleDomainSelect = async (domain: Domain) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Loading skills for domain:', domain.name);
+      const response = await fetch(`/api/skill-analysis/domains/${domain.slug}`);
+      console.log('Skills response status:', response.status);
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          console.error('Domain Skills API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData: errorData,
+            url: `/api/skill-analysis/domains/${domain.slug}`
+          });
+          errorMessage = errorData.message || errorData.code || errorMessage;
+        } catch (parseError) {
+          console.error('Failed to parse domain skills error response:', parseError);
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const data = await response.json();
+      console.log('Skills data:', data);
+      
+      if (data.status === 'success') {
+        setSelectedDomain(data.data);
+        setCurrentStep('skills');
+        console.log('Skills loaded successfully:', Object.keys(data.data.skills).reduce((acc, level) => acc + data.data.skills[level].length, 0));
+      } else {
+        setError(`Failed to load domain skills: ${data.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error loading domain skills:', err);
+      setError(`Failed to load domain skills: ${err instanceof Error ? err.message : 'Network error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSkillSelect = (skill: Skill) => {
+    const existingIndex = selectedSkills.findIndex(s => s.key === skill.key);
+    
+    if (existingIndex >= 0) {
+      // Remove skill
+      setSelectedSkills(prev => prev.filter(s => s.key !== skill.key));
+    } else {
+      // Add skill with default user level
+      setSelectedSkills(prev => [...prev, {
+        key: skill.key,
+        name: skill.name,
+        level: skill.level,
+        userLevel: 'BEGINNER'
+      }]);
+    }
+  };
+
+  const handleSkillLevelChange = (skill: Skill, level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') => {
+    setSelectedSkills(prev => prev.map(s => 
+      s.key === skill.key ? { ...s, userLevel: level } : s
+    ));
+  };
+
+  const handleStartQuiz = async () => {
+    if (selectedSkills.length === 0) return;
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Starting quiz generation...');
+      console.log('Selected domain:', selectedDomain?.name);
+      console.log('Selected skills:', selectedSkills.map(s => ({ key: s.key, level: s.userLevel })));
+
+      const response = await fetch('/api/skill-analysis/quiz/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          domainId: selectedDomain!.id,
+          skills: selectedSkills.map(s => ({ key: s.key, level: s.userLevel })),
+          userId: 'user_' + Date.now() // In real app, get from auth
+        })
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        let errorMessage = 'Server error';
+        try {
+          const errorData = await response.json();
+          console.error('Quiz Generation API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData: errorData,
+            url: '/api/skill-analysis/quiz/generate',
+            method: 'POST'
+          });
+          errorMessage = errorData.message || errorData.code || `HTTP ${response.status}: ${response.statusText}`;
+        } catch (parseError) {
+          console.error('Failed to parse quiz generation error response:', {
+            parseError: parseError,
+            status: response.status,
+            statusText: response.statusText,
+            url: '/api/skill-analysis/quiz/generate'
+          });
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        setError(`Failed to generate quiz: ${errorMessage}`);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Quiz data received:', data);
+
+      if (data.status === 'success') {
+        setQuizData(data.data);
+        setCurrentStep('quiz');
+      } else {
+        console.error('Quiz generation failed:', data);
+        setError(`Failed to generate quiz: ${data.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Quiz generation error:', err);
+      setError(`Failed to generate quiz: ${err instanceof Error ? err.message : 'Network error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAnswer = (answer: string) => {
+    const currentQuestion = quizData!.questions[currentQuestionIndex];
+    setAnswers(prev => [...prev, {
+      questionId: currentQuestion.id,
+      answer,
+      timeSpent: 60 // In real app, track actual time
+    }]);
+
+    if (currentQuestionIndex < quizData!.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      submitQuiz();
+    }
+  };
+
+  const submitQuiz = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/skill-analysis/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assessmentId: quizData!.assessmentId,
+          answers
+        })
+      });
+      
+      const data = await response.json();
+      if (data.status === 'success') {
+        setResult(data.data);
+        setCurrentStep('results');
+      } else {
+        console.error('Quiz Submission API Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: data,
+          url: '/api/skill-analysis/quiz/submit'
+        });
+        setError(`Failed to submit quiz: ${data.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Quiz Submission Network Error:', {
+        error: err,
+        url: '/api/skill-analysis/quiz/submit'
+      });
+      setError(`Failed to submit quiz: ${err instanceof Error ? err.message : 'Network error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRetake = () => {
+    setCurrentQuestionIndex(0);
+    setAnswers([]);
+    setResult(null);
+    setCurrentStep('quiz');
+  };
+
+  const handleNewDomain = () => {
+    setSelectedDomain(null);
+    setSelectedSkills([]);
+    setQuizData(null);
+    setCurrentQuestionIndex(0);
+    setAnswers([]);
+    setResult(null);
+    setCurrentStep('domains');
+  };
+
+  if (error) {
+  return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Target className="w-8 h-8 text-red-600" />
                         </div>
-                      ))}
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-6 break-words">{error}</p>
+          <div className="space-y-3">
+                <button
+              onClick={() => {
+                setError(null);
+                window.location.reload();
+              }}
+              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+                </button>
+                <button
+              onClick={() => {
+                setError(null);
+                setCurrentStep('domains');
+              }}
+              className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Go Back
+                </button>
+                    </div>
+                  </div>
+                </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-pink-50">
+      {/* Brand Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-pink-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/images/even.png" 
+                alt="Brand Logo" 
+                className="w-12 h-12 rounded-lg object-cover shadow-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">Advanced Skill Analysis</h1>
+                <p className="text-gray-600">Interactive assessment with personalized insights</p>
+                    </div>
+                    </div>
+
+            <div className="flex items-center space-x-4">
+              {/* Back to Dashboard Button */}
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all duration-300 group"
+              >
+                <BarChart3 className="w-5 h-5 group-hover:text-pink-600 transition-colors duration-300" />
+                <span className="text-sm font-medium group-hover:text-pink-600 transition-colors duration-300">Back to Dashboard</span>
+              </button>
+              
+              {/* Back to Home Button */}
+              <button
+                onClick={() => window.location.href = '/'}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all duration-300 group"
+              >
+                <Home className="w-5 h-5 group-hover:text-pink-600 transition-colors duration-300" />
+                <span className="text-sm font-medium group-hover:text-pink-600 transition-colors duration-300">Back to Home</span>
+              </button>
+              
+              {/* Progress Indicator */}
+              <div className="text-right">
+                <div className="text-sm text-gray-600 mb-1">
+                  Step {currentStep === 'domains' ? '1' : currentStep === 'skills' ? '2' : currentStep === 'quiz' ? '3' : '4'} of 4
+                </div>
+                <div className="w-32 bg-pink-200 rounded-full h-2 overflow-hidden">
+                  <div 
+                    className="h-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500"
+                    style={{ 
+                      width: `${currentStep === 'domains' ? 25 : currentStep === 'skills' ? 50 : currentStep === 'quiz' ? 75 : 100}%` 
+                    }}
+                  />
+                </div>
+              </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-                    <button
-                      onClick={prevStep}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => window.location.href = '/dashboard'}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                    >
-                      <span>Go to Dashboard</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
+      <div className="max-w-7xl mx-auto p-8 bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-pink-100">
+        {/* Domain Selection */}
+        {currentStep === 'domains' && (
+          <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-4xl font-black text-black mb-6 tracking-tight hover:scale-105 transition-transform duration-300">
+                  Choose Your Career Domain
+                </h2>
+                
+                <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-8 leading-relaxed">
+                  Choose any domain that interests you! Each path offers valuable skills and learning opportunities. 
+                  Take your time to explore what feels right for you.
+                </p>
+              </div>
+
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No Analysis Results
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Something went wrong. Please try again.
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {domains.map((domain) => (
+                    <DomainCard
+                      key={domain.id}
+                      domain={domain}
+                      onSelect={handleDomainSelect}
+                    />
+                        ))}
+                      </div>
+              )}
+            </div>
+          )}
+
+          {/* Skills Selection */}
+          {currentStep === 'skills' && selectedDomain && (
+            <div className="space-y-8">
+                  <div className="text-center">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Select Skills for {selectedDomain.name}
+                    </h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Choose the skills you want to assess. You can select your proficiency level for each skill.
+                  We'll generate {selectedSkills.length * 5} questions based on your selections.
                   </p>
-                  <button
-                    onClick={prevStep}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Try Again
-                  </button>
+                  </div>
+
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="space-y-8">
+                  {Object.entries(selectedDomain.skills).map(([level, skills]) => (
+                    <div key={level}>
+                      <h3 className="text-xl font-bold text-gray-900 mb-4 capitalize">
+                        {level} Skills ({skills.length})
+                    </h3>
+                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+                        {skills.map((skill) => (
+                          <SkillPill
+                            key={skill.id}
+                            skill={skill}
+                            isSelected={selectedSkills.some(s => s.key === skill.key)}
+                            userLevel={selectedSkills.find(s => s.key === skill.key)?.userLevel || 'BEGINNER'}
+                            onSelect={handleSkillSelect}
+                            onLevelChange={handleSkillLevelChange}
+                          />
+                      ))}
+                    </div>
+                        </div>
+                      ))}
+                  </div>
+
+                <div className="mt-8 flex items-center justify-between">
+                    <button
+                    onClick={() => setCurrentStep('domains')}
+                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                    >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Back to Domains</span>
+                    </button>
+
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-2">
+                      Selected: {selectedSkills.length} skills
+                  </p>
+                    <button
+                      onClick={handleStartQuiz}
+                      disabled={selectedSkills.length === 0 || isLoading}
+                      className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center space-x-2"
+                    >
+                      {isLoading ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
+                      <span>Start Assessment</span>
+                    </button>
+                  </div>
+                </div>
+                </div>
                 </div>
               )}
-            </motion.div>
+
+          {/* Quiz */}
+          {currentStep === 'quiz' && quizData && (
+              <QuestionCard
+                question={quizData.questions[currentQuestionIndex]}
+                currentIndex={currentQuestionIndex}
+                totalQuestions={quizData.questions.length}
+                onAnswer={handleAnswer}
+                onNext={() => setCurrentQuestionIndex(prev => prev + 1)}
+                onPrevious={() => setCurrentQuestionIndex(prev => prev - 1)}
+              />
+          )}
+
+          {/* Results */}
+          {currentStep === 'results' && result && (
+            <div>
+              <ResultsPage
+                result={result}
+                onRetake={handleRetake}
+                onNewDomain={handleNewDomain}
+              />
+            </div>
           )}
         </div>
       </div>

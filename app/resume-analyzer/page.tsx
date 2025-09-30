@@ -140,7 +140,11 @@ export default function AdvancedResumeAnalyzer() {
 
       console.log('API Response:', data); // Debug log
 
-      if (data.type === 'text') {
+      // Handle the response directly - Gemini API returns structured data
+      if (data.overallScore !== undefined) {
+        // This is a proper Gemini analysis response
+        setAnalysisResult(data);
+      } else if (data.type === 'text') {
         // Handle text response - show the actual AI analysis text
         setAnalysisResult({
           overallScore: 75,
@@ -165,13 +169,13 @@ export default function AdvancedResumeAnalyzer() {
           keywordMatch: 65,
           summary: data.analysis
         });
-      } else if (analysisType === 'comprehensive') {
-        setAnalysisResult(data);
-      } else if (analysisType === 'career') {
-        setCareerAnalysis(data);
       } else {
-        // Handle skills analysis type
-        setAnalysisResult(data);
+        // Handle other analysis types
+        if (analysisType === 'career') {
+          setCareerAnalysis(data);
+        } else {
+          setAnalysisResult(data);
+        }
       }
 
       setCurrentStep(4);
@@ -215,7 +219,7 @@ export default function AdvancedResumeAnalyzer() {
       </div>
 
       {/* AI Chatbot */}
-      <AIChatbot context="general" />
+      <AIChatbot context="resume" autoMinimize={true} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

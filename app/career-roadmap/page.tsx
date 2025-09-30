@@ -295,7 +295,7 @@ export default function CareerRoadmapPage() {
   const [selectedDomain, setSelectedDomain] = useState<CareerDomain | null>(null)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-pink-50 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -304,7 +304,7 @@ export default function CareerRoadmapPage() {
           transition={{ duration: 1 }}
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle, rgba(59, 130, 246, 0.05) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, rgba(236, 72, 153, 0.05) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
             opacity: 0.6
           }}
@@ -320,7 +320,7 @@ export default function CareerRoadmapPage() {
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="absolute top-20 left-10 w-32 h-32 bg-blue-100 rounded-full opacity-20 blur-xl"
+          className="absolute top-20 left-10 w-32 h-32 bg-pink-100 rounded-full opacity-20 blur-xl"
         />
         <motion.div
           animate={{ 

@@ -1,0 +1,21 @@
+{
+  "apiBaseUrl": "http://localhost:4000",
+  "featureFlags": {
+    "showAnonymizedUser": true,
+    "enableDetailedReview": false,
+    "enableAdvancedAnalytics": true
+  },
+  "analytics": {
+    "segmentWriteKey": ""
+  },
+  "ui": {
+    "theme": "light",
+    "animations": true,
+    "accessibility": true
+  },
+  "assessment": {
+    "defaultTimeLimit": 1800,
+    "maxQuestionsPerSkill": 5,
+    "minQuestionsPerSkill": 3
+  }
+}

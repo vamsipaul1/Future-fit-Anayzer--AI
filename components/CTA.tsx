@@ -62,6 +62,13 @@ const CTA = () => {
               Get Started Today
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
+            <Link
+              href="/career-decision"
+              className="group bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold text-base hover:from-pink-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl flex items-center"
+            >
+              Discover Career Path
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
           </div>
 
           {/* Trust Indicators */}

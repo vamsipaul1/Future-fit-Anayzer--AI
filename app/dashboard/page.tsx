@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   ArrowRight,
   Brain,
@@ -232,7 +233,7 @@ export default function DashboardPage() {
       icon: "🧠",
       title: "Skill Analysis", 
       description: "Comprehensive skill assessment",
-      route: "/analyze",
+      route: "/skill-analysis",
       color: "from-blue-500/20 to-blue-600/20",
       borderColor: "border-blue-400/30"
     },
@@ -277,60 +278,126 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
+      {/* Go to Home Button */}
+      <motion.div 
+        className="absolute top-6 left-6 z-50"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <motion.button
+          onClick={() => window.location.href = '/'}
+          className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 group bg-white/90 backdrop-blur-sm shadow-lg"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Home className="w-5 h-5 group-hover:text-blue-600 transition-colors duration-300" />
+          <span className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-300">Go to Home</span>
+        </motion.button>
+      </motion.div>
+
       <div className="flex">
         {/* Sidebar - Keep existing */}
-        <aside className="w-64 bg-gray-900 text-white min-h-screen">
+        <motion.aside 
+          className="w-64 bg-gray-900 text-white min-h-screen"
+          initial={{ x: -100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
           <div className="p-6">
             {/* Logo */}
-            <div className="flex items-center space-x-3 mb-8">
-              <img
-                src="/images/even.png"
-                alt="FutureFit Logo"
-                className="w-8 h-8 rounded-lg"
-              />
+            <motion.div 
+              className="flex items-center space-x-3 mb-8"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="relative"
+              >
+                <Image
+                  src="/images/even.png"
+                  alt="FutureFit Logo"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-xl shadow-lg border-2 border-white/20 hover:border-white/40 transition-all duration-300"
+                  priority
+                  unoptimized
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                />
+              </motion.div>
               <span className="text-xl font-bold">FutureFit</span>
-            </div>
+            </motion.div>
 
             {/* Navigation */}
-            <nav className="space-y-2">
-              <Link href="/dashboard" className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-                <Home className="w-5 h-5" />
-                <span>Dashboard</span>
-              </Link>
-              <Link href="/analyze" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
-                <BarChart3 className="w-5 h-5" />
-                <span>Skills</span>
-              </Link>
-              <Link href="/career-decision" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
-                <Target className="w-5 h-5" />
-                <span>Career Path</span>
-              </Link>
-              <Link href="/resume-analyzer" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
-                <FileText className="w-5 h-5" />
-                <span>Resume Scan</span>
-              </Link>
-              <Link href="/insights" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
-                <Lightbulb className="w-5 h-5" />
-                <span>Insights</span>
-              </Link>
-              <Link href="/history" className="flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-lg transition-colors">
-                <Clock className="w-5 h-5" />
-                <span>History</span>
-              </Link>
-            </nav>
+            <motion.nav 
+              className="space-y-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              {[
+                { href: "/dashboard", icon: Home, label: "Dashboard", isActive: true },
+                { href: "/skill-analysis", icon: BarChart3, label: "Skill Analyzer", isActive: false },
+                { href: "/career-decision", icon: Target, label: "Career Path", isActive: false },
+                { href: "/resume-analyzer", icon: FileText, label: "Resume Scan", isActive: false },
+                { href: "/insights", icon: Lightbulb, label: "Insights", isActive: false },
+                { href: "/history", icon: Clock, label: "History", isActive: false },
+                { href: "/debug", icon: Settings, label: "Debug", isActive: false }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.href}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
+                >
+                  <Link 
+                    href={item.href} 
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 hover:scale-105 ${
+                      item.isActive ? 'bg-gray-800' : 'hover:bg-gray-800'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.nav>
           </div>
-        </aside>
+        </motion.aside>
 
         {/* Top Right User Icon */}
-        <div className="absolute top-6 right-6 z-50">
-          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+        <motion.div 
+          className="absolute top-6 right-6 z-50"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 cursor-pointer">
             <User className="w-5 h-5 text-white" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Main Content */}
-        <main className="flex-1 relative overflow-hidden">
+        <motion.main 
+          className="flex-1 relative overflow-hidden"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
           <AnimatePresence mode="wait">
             {/* Welcome Section */}
             {showWelcome && (
@@ -634,8 +701,8 @@ export default function DashboardPage() {
               </motion.div>
             )}
           </AnimatePresence>
-        </main>
+        </motion.main>
       </div>
-    </div>
+    </motion.div>
   );
 }

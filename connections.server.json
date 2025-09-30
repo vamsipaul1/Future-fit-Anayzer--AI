@@ -1,0 +1,26 @@
+{
+  "prisma": {
+    "DATABASE_URL": "file:./dev.db"
+  },
+  "redis": {
+    "URL": "redis://localhost:6379"
+  },
+  "sentry": {
+    "DSN": ""
+  },
+  "externalResources": {
+    "recommendationEngine": {
+      "baseUrl": "https://reco.example.com",
+      "apiKeyEnv": "RECO_API_KEY"
+    }
+  },
+  "cache": {
+    "analysisTtl": 86400,
+    "questionTtl": 3600
+  },
+  "performance": {
+    "maxConcurrentAssessments": 100,
+    "analysisTimeoutMs": 800,
+    "questionBatchSize": 50
+  }
+}

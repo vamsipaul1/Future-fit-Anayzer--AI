@@ -1,0 +1,279 @@
+[
+  {
+    "category": "Ability",
+    "question": "When you encounter a completely unfamiliar problem, what is your first instinct?",
+    "type": "MCQ",
+    "options": [
+      "Break the problem into smaller parts",
+      "Search for examples or prior work",
+      "Ask someone experienced",
+      "Experiment until you find a solution"
+    ]
+  },
+  {
+    "category": "Ability",
+    "question": "Solve this: A data structure allows both FIFO and LIFO operations. Which is it?",
+    "type": "MCQ",
+    "options": ["Deque", "Stack", "Queue", "Heap"],
+    "answer": "Deque"
+  },
+  {
+    "category": "Ability",
+    "question": "How do you approach debugging a complex system?",
+    "type": "MCQ",
+    "options": [
+      "Use systematic logging and tracing",
+      "Try random fixes until something works",
+      "Ask for help immediately",
+      "Read all documentation first"
+    ]
+  },
+  {
+    "category": "Ability",
+    "question": "Rate your problem-solving ability on a scale of 1-5",
+    "type": "Ability"
+  },
+  {
+    "category": "Ability",
+    "question": "When learning a new programming language, what do you focus on first?",
+    "type": "MCQ",
+    "options": [
+      "Syntax and basic structure",
+      "Best practices and patterns",
+      "Building a small project",
+      "Reading the official documentation"
+    ]
+  },
+  {
+    "category": "Interest",
+    "question": "Which of the following project types excites you the most?",
+    "type": "MCQ",
+    "options": [
+      "Building a scalable web app",
+      "Creating a machine learning model",
+      "Designing a secure authentication system",
+      "Deploying cloud infrastructure"
+    ]
+  },
+  {
+    "category": "Interest",
+    "question": "What type of work environment do you prefer?",
+    "type": "MCQ",
+    "options": [
+      "Remote work with flexible hours",
+      "Office environment with team collaboration",
+      "Mixed/hybrid approach",
+      "Field work with hands-on experience"
+    ]
+  },
+  {
+    "category": "Interest",
+    "question": "Which activity excites you the most?",
+    "type": "MCQ",
+    "options": [
+      "Building websites and apps",
+      "Analyzing data patterns",
+      "Designing secure systems",
+      "Automating tasks with AI"
+    ]
+  },
+  {
+    "category": "Interest",
+    "question": "Rate your interest in working with emerging technologies",
+    "type": "Ability"
+  },
+  {
+    "category": "Interest",
+    "question": "What motivates you most in your career?",
+    "type": "MCQ",
+    "options": [
+      "Financial success and stability",
+      "Helping others and making impact",
+      "Creative expression and innovation",
+      "Problem solving and technical challenges"
+    ]
+  },
+  {
+    "category": "Passion",
+    "question": "On a scale of 1-5, how passionate are you about solving logical puzzles?",
+    "type": "Ability"
+  },
+  {
+    "category": "Passion",
+    "question": "How motivated are you to learn new programming languages?",
+    "type": "Ability"
+  },
+  {
+    "category": "Passion",
+    "question": "Rate your passion for continuous learning",
+    "type": "Ability"
+  },
+  {
+    "category": "Passion",
+    "question": "How important is it for you to work on cutting-edge technology?",
+    "type": "MCQ",
+    "options": [
+      "Extremely important",
+      "Very important",
+      "Somewhat important",
+      "Not very important"
+    ]
+  },
+  {
+    "category": "Passion",
+    "question": "Rate your drive to build something from scratch",
+    "type": "Ability"
+  },
+  {
+    "category": "TechDomain",
+    "question": "In web development, what does SSR stand for?",
+    "type": "MCQ",
+    "options": [
+      "Server-Side Rendering",
+      "Simple Script Runtime",
+      "Secure Session Routing",
+      "Static Site Resource"
+    ],
+    "answer": "Server-Side Rendering"
+  },
+  {
+    "category": "TechDomain",
+    "question": "Python is widely used in Data Science. What library is primarily used for data manipulation?",
+    "type": "MCQ",
+    "options": ["NumPy", "Pandas", "Matplotlib", "TensorFlow"],
+    "answer": "Pandas"
+  },
+  {
+    "category": "TechDomain",
+    "question": "If you want to deploy an AI application at scale, which cloud platform service is most relevant?",
+    "type": "MCQ",
+    "options": [
+      "AWS SageMaker",
+      "Google BigQuery",
+      "Azure DevOps",
+      "Oracle VirtualBox"
+    ],
+    "answer": "AWS SageMaker"
+  },
+  {
+    "category": "TechDomain",
+    "question": "Which technology are you most curious to learn?",
+    "type": "MCQ",
+    "options": [
+      "Cloud Computing",
+      "Machine Learning",
+      "Web Development",
+      "Cybersecurity"
+    ]
+  },
+  {
+    "category": "TechDomain",
+    "question": "What is the primary purpose of Docker in software development?",
+    "type": "MCQ",
+    "options": [
+      "Containerization and deployment",
+      "Database management",
+      "Code versioning",
+      "Testing automation"
+    ],
+    "answer": "Containerization and deployment"
+  },
+  {
+    "category": "WorkPreference",
+    "question": "Do you prefer working in a structured corporate environment or an unstructured startup?",
+    "type": "MCQ",
+    "options": [
+      "Corporate environment",
+      "Startup environment",
+      "Hybrid approach",
+      "Remote freelance"
+    ]
+  },
+  {
+    "category": "WorkPreference",
+    "question": "How do you prefer to receive feedback on your work?",
+    "type": "MCQ",
+    "options": [
+      "Regular one-on-one meetings",
+      "Written feedback via email",
+      "Team retrospectives",
+      "Real-time during work"
+    ]
+  },
+  {
+    "category": "WorkPreference",
+    "question": "Rate your preference for working independently vs in a team",
+    "type": "Ability"
+  },
+  {
+    "category": "WorkPreference",
+    "question": "What type of leadership style do you respond best to?",
+    "type": "MCQ",
+    "options": [
+      "Hands-on mentoring",
+      "Autonomous with clear goals",
+      "Collaborative decision-making",
+      "Structured guidance"
+    ]
+  },
+  {
+    "category": "WorkPreference",
+    "question": "How important is work-life balance to you?",
+    "type": "MCQ",
+    "options": [
+      "Extremely important",
+      "Very important",
+      "Somewhat important",
+      "Not a priority"
+    ]
+  },
+  {
+    "category": "LearningStyle",
+    "question": "How do you learn best?",
+    "type": "MCQ",
+    "options": [
+      "Watching tutorials and videos",
+      "Reading documentation and books",
+      "Building projects hands-on",
+      "Working in a team environment"
+    ]
+  },
+  {
+    "category": "LearningStyle",
+    "question": "When learning a new concept, what helps you understand it better?",
+    "type": "MCQ",
+    "options": [
+      "Visual diagrams and examples",
+      "Step-by-step written instructions",
+      "Interactive coding exercises",
+      "Discussion with peers"
+    ]
+  },
+  {
+    "category": "LearningStyle",
+    "question": "Rate your preference for structured vs self-directed learning",
+    "type": "Ability"
+  },
+  {
+    "category": "LearningStyle",
+    "question": "How do you prefer to practice new skills?",
+    "type": "MCQ",
+    "options": [
+      "Through real-world projects",
+      "Using online coding platforms",
+      "Following tutorial exercises",
+      "Collaborating with others"
+    ]
+  },
+  {
+    "category": "LearningStyle",
+    "question": "What motivates you to keep learning?",
+    "type": "MCQ",
+    "options": [
+      "Career advancement opportunities",
+      "Personal curiosity and interest",
+      "Solving specific problems",
+      "Community and peer recognition"
+    ]
+  }
+]

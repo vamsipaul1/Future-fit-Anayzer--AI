@@ -24,7 +24,7 @@ export default function CareerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-white to-pink-50">
       <div className="max-w-6xl mx-auto p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -42,8 +42,8 @@ export default function CareerPage() {
               onClick={() => setActiveComponent(key)}
               className={`p-6 rounded-lg border-2 transition-all ${
                 activeComponent === key
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  ? 'border-pink-500 bg-pink-50'
+                  : 'border-gray-200 bg-white hover:border-pink-300'
               }`}
             >
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -56,7 +56,7 @@ export default function CareerPage() {
           ))}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-pink-100">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             {careerComponents[activeComponent as keyof typeof careerComponents].title}
           </h2>
@@ -120,7 +120,7 @@ function CareerQuiz() {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-pink-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
           ></div>
         </div>
@@ -135,7 +135,7 @@ function CareerQuiz() {
           <button
             key={index}
             onClick={() => handleAnswer(index)}
-            className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-pink-500 hover:bg-pink-50 transition-colors"
           >
             {option}
           </button>

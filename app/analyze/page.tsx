@@ -70,7 +70,7 @@ export default function AnalyzePage() {
       </div>
 
       {/* AI Chatbot */}
-      <AIChatbot context="skills" />
+      <AIChatbot context="skills" autoMinimize={true} />
       <div className="max-w-4xl mx-auto p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
