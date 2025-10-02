@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 
 interface SubmitAnswer {
   itemId: string;
@@ -14,10 +14,10 @@ interface SubmitAssessmentRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { assessmentId: string } }
+  { params }: { params: Promise<{ assessmentId: string }> }
 ) {
   try {
-    const { assessmentId } = params;
+    const { assessmentId } = await params;
     const body: SubmitAssessmentRequest = await request.json();
     const { userId, answers } = body;
 
@@ -111,7 +111,7 @@ export async function POST(
         isCorrect = rating >= 7;
       } else {
         // For other question types, use basic scoring
-        isCorrect = answer.selectedChoice && answer.selectedChoice.length > 0;
+        isCorrect = Boolean(answer.selectedChoice && answer.selectedChoice.length > 0);
       }
 
       // Update assessment item

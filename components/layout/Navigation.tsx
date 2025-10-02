@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { Menu, X, Zap, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '../ui/Logo';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +14,8 @@ const Navigation = () => {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Resume Analyzer', href: '/resume-analyzer' },
-    { name: 'Career Discovery', href: '/career' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'How It Works', href: '/#how-it-works' },
     { name: 'Skill Analysis', href: '/skill-analysis' },
     { name: 'Dashboard', href: '/dashboard' },
   ];
@@ -27,35 +28,14 @@ const Navigation = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-50/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
-          {/* Left Side - Brand Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="relative"
-            >
-              <Image
-                src="/images/even.png"
-                alt="FutureFit Logo"
-                width={48}
-                height={48}
-                className="rounded-xl shadow-lg object-contain border-2 border-white/20 hover:border-white/40 transition-all duration-300"
-                priority
-                unoptimized
-              />
-              <motion.div
-                className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-              />
-            </motion.div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-gray-700 group-hover:text-gray-600 transition-colors duration-300">
-                FutureFit
-              </span>
-              <span className="text-xs text-gray-500 -mt-1">AI-Powered Learning</span>
-            </div>
+          {/* Left Side - Enhanced Brand Logo */}
+          <Link href="/" className="group">
+            <Logo 
+              size="md" 
+              showText={true} 
+              variant="navigation"
+              className="group-hover:scale-105 transition-transform duration-300"
+            />
           </Link>
 
           {/* Center - Navigation Links */}
@@ -114,10 +94,10 @@ const Navigation = () => {
                   Log in
                 </Link>
                 <Link
-                  href="/signup"
-                  className="bg-black text-white px-6 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 transform hover:scale-105"
+                  href="/pricing"
+                  className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-6 py-2 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </>
             )}
@@ -195,11 +175,11 @@ const Navigation = () => {
                         Log in
                       </Link>
                       <Link
-                        href="/signup"
-                        className="block w-full bg-black text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all duration-300 text-center"
+                        href="/pricing"
+                        className="block w-full bg-gradient-to-r from-green-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-blue-700 transition-all duration-300 text-center"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Sign Up
+                        Get Started
                       </Link>
                     </>
                   )}

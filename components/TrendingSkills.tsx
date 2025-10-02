@@ -115,7 +115,7 @@ const TrendingSkills = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
+    <section id="trending-skills" ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-40 h-40 bg-blue-100/30 rounded-full blur-2xl animate-pulse"></div>

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function PageDiagnostic() {
-  const [diagnostics, setDiagnostics] = useState({});
+  const [diagnostics, setDiagnostics] = useState<{ [key: string]: any }>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const testPages = [
@@ -30,7 +30,7 @@ export default function PageDiagnostic() {
 
   const runDiagnostics = async () => {
     setIsLoading(true);
-    const results = {};
+    const results: { [key: string]: any } = {};
     
     for (const page of testPages) {
       try {
@@ -58,7 +58,7 @@ export default function PageDiagnostic() {
           hasTailwindCSS: false,
           hasFramerMotion: false,
           hasContent: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error)
         };
       }
     }

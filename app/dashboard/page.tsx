@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
+import Logo from '../../components/ui/Logo';
 import { 
   ArrowRight,
   Brain,
@@ -318,28 +318,12 @@ export default function DashboardPage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="relative"
-              >
-                <Image
-                  src="/images/even.png"
-                  alt="FutureFit Logo"
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 rounded-xl shadow-lg border-2 border-white/20 hover:border-white/40 transition-all duration-300"
-                  priority
-                  unoptimized
-                />
-                <motion.div
-                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 hover:opacity-100 transition-opacity duration-300"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                />
-              </motion.div>
-              <span className="text-xl font-bold">FutureFit</span>
+              <Logo 
+                size="md" 
+                showText={true} 
+                variant="default"
+                className="hover:scale-105 transition-transform duration-300"
+              />
             </motion.div>
 
             {/* Navigation */}

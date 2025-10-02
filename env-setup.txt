@@ -1,0 +1,8 @@
+GEMINI_API_KEY=AIzaSyCmuCjiPFSffp-HG-87ild1k7mfxhBDbC8
+
+Instructions:
+1. Rename this file to ".env.local" 
+2. Or copy the content above into a new file called ".env.local" in the project root
+3. Restart the development server with: npm run dev
+
+This will enable real AI-powered resume analysis instead of fallback mode.

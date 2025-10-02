@@ -18,7 +18,7 @@ import {
 
 export default function RouteTestPage() {
   const router = useRouter();
-  const [testResults, setTestResults] = useState({});
+  const [testResults, setTestResults] = useState<{ [key: string]: any }>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const testRoutes = [
@@ -29,7 +29,7 @@ export default function RouteTestPage() {
     { name: 'Dashboard', href: '/dashboard', icon: Home }
   ];
 
-  const testRouteAccess = async (href) => {
+  const testRouteAccess = async (href: string) => {
     try {
       const response = await fetch(href);
       return {
@@ -44,14 +44,14 @@ export default function RouteTestPage() {
         status: 'Error',
         ok: false,
         url: href,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   };
 
   const runAllTests = async () => {
     setIsLoading(true);
-    const results = {};
+    const results: { [key: string]: any } = {};
     
     for (const route of testRoutes) {
       const result = await testRouteAccess(route.href);
@@ -62,7 +62,7 @@ export default function RouteTestPage() {
     setIsLoading(false);
   };
 
-  const navigateToRoute = (href) => {
+  const navigateToRoute = (href: string) => {
     router.push(href);
   };
 

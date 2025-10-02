@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import Logo from '../../components/ui/Logo';
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,10 +34,8 @@ export default function SignUpPage() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const callbackUrl = urlParams.get('callbackUrl') || '/dashboard';
-      
-      await signIn('google', { callbackUrl });
+      // For new users signing up, always redirect to dashboard
+      await signIn('google', { callbackUrl: '/dashboard' });
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
     } finally {
@@ -66,6 +64,7 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // For new users, always redirect to dashboard
         const signInResult = await signIn('credentials', {
           email,
           password: 'temp-password-123',
@@ -96,29 +95,19 @@ export default function SignUpPage() {
         transition={{ duration: 0.6 }}
         className="max-w-md w-full text-center"
       >
-        {/* Logo */}
+        {/* Enhanced Logo */}
         <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-          className="mb-6"
+          className="mb-8 flex justify-center"
         >
-          <motion.div 
-            whileHover={{ scale: 1.1, rotate: 10 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-16 h-16 mx-auto mb-3 bg-white rounded-xl flex items-center justify-center shadow-xl border-2 border-white/30 hover:border-white/50 transition-all duration-300"
-          >
-            <Image
-              src="/images/even.png"
-              alt="FutureFit Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-              priority
-              unoptimized
-            />
-          </motion.div>
+          <Logo 
+            size="xl" 
+            showText={true} 
+            variant="auth"
+            className="hover:scale-105 transition-transform duration-300"
+          />
         </motion.div>
 
         {/* Heading */}

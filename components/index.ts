@@ -6,3 +6,4 @@ export { default as HowItWorks } from './HowItWorks';
 export { default as TrendingSkills } from './TrendingSkills';
 export { default as IntroOverlay } from './IntroOverlay';
 export { default as DashboardWithIntro } from './DashboardWithIntro';
+export { default as Logo } from './ui/Logo';

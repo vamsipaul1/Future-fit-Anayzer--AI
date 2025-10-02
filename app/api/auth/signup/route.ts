@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         message: 'User created successfully',
-        user: userWithoutPassword
+        user: userWithoutPassword,
+        isNewUser: true
       },
       { status: 201 }
     )

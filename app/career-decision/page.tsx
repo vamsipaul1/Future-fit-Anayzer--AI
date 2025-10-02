@@ -3,8 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import BackButton from '../../components/BackButton'
-import AIChatbot from '../../components/AIChatbot'
+import BackButton from '../../components/ui/BackButton'
+import AIChatbot from '../../components/ui/AIChatbot'
 import { 
   ArrowLeft,
   Brain,

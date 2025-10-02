@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       
       // Select 1 Practical (ShortAnswer / Code / FillInBlank / Scenario)
       const practical = skillQuestions
-        .filter(q => ['ShortAnswer', 'Code', 'FillInBlank', 'Scenario'].includes(q.type))
+        .filter(q => q.type && ['ShortAnswer', 'Code', 'FillInBlank', 'Scenario'].includes(q.type))
         .slice(0, 1);
       
       const skillQuiz = [...mcqs, ...ability, ...practical];

@@ -26,7 +26,13 @@ export default function AIChatbot({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Handle hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Auto-minimize when buttons are clicked
   useEffect(() => {
@@ -115,6 +121,11 @@ export default function AIChatbot({
     setIsMinimized(false);
   };
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return null;
+  }
+
   // Minimized state - just a small floating button
   if (isMinimized) {
     return (
@@ -125,6 +136,8 @@ export default function AIChatbot({
             setIsExpanded(true);
           }}
           className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+          suppressHydrationWarning
+          aria-label="Open AI chatbot"
         >
           <MessageCircle className="w-6 h-6 text-white" />
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
@@ -154,12 +167,16 @@ export default function AIChatbot({
             <button
               onClick={toggleExpand}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              suppressHydrationWarning
+              aria-label="Expand chatbot"
             >
               <Maximize2 className="w-4 h-4 text-white" />
             </button>
             <button
               onClick={toggleMinimize}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
+              suppressHydrationWarning
+              aria-label="Minimize chatbot"
             >
               <Minimize2 className="w-4 h-4 text-white" />
             </button>
@@ -209,11 +226,14 @@ export default function AIChatbot({
               placeholder="Ask me anything..."
               className="flex-1 p-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
               disabled={isLoading}
+              suppressHydrationWarning
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputText.trim() || isLoading}
               className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              suppressHydrationWarning
+              aria-label="Send message"
             >
               <Send className="w-3 h-3" />
             </button>
@@ -241,12 +261,16 @@ export default function AIChatbot({
           <button
             onClick={toggleExpand}
             className="p-1 hover:bg-white/20 rounded-full transition-colors"
+            suppressHydrationWarning
+            aria-label="Expand chatbot"
           >
             <Maximize2 className="w-4 h-4 text-white" />
           </button>
           <button
             onClick={toggleMinimize}
             className="p-1 hover:bg-white/20 rounded-full transition-colors"
+            suppressHydrationWarning
+            aria-label="Minimize chatbot"
           >
             <Minimize2 className="w-4 h-4 text-white" />
           </button>
@@ -304,6 +328,8 @@ export default function AIChatbot({
             onClick={handleSendMessage}
             disabled={!inputText.trim() || isLoading}
             className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            suppressHydrationWarning
+            aria-label="Send message"
           >
             <Send className="w-3 h-3" />
           </button>

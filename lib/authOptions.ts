@@ -1,7 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!existingUser) {
-            // Create new user
+            // Create new user - mark as new user
             await prisma.user.create({
               data: {
                 email: user.email!,
@@ -70,6 +70,11 @@ export const authOptions: NextAuthOptions = {
                 image: user.image || '',
               }
             });
+            // Store in session that this is a new user
+            (user as any).isNewUser = true;
+          } else {
+            // Existing user
+            (user as any).isNewUser = false;
           }
           return true;
         } catch (error) {
@@ -82,6 +87,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+        token.isNewUser = (user as any).isNewUser;
       }
       if (account) {
         token.provider = account.provider;
@@ -91,8 +97,15 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token.id && session?.user) {
         (session.user as any).id = token.id as string;
+        (session.user as any).isNewUser = token.isNewUser as boolean;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Handle redirects based on whether user is new or returning
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   session: {
@@ -106,7 +119,7 @@ export const authOptions: NextAuthOptions = {
   debug: false,
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log('User signed in:', { user: user.email, provider: account?.provider });
+      console.log('User signed in:', { user: user.email, provider: account?.provider, isNewUser });
     },
     async signOut({ session, token }) {
       console.log('User signed out:', { user: session?.user?.email || 'unknown' });

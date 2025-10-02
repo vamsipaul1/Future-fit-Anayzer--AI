@@ -1,6 +1,6 @@
 'use client';
 
-import { Play, TrendingUp, Code2, Palette, Database, Cpu, Zap, Brain, BarChart3, ArrowRight, Wallet, CreditCard, Users, Menu, MoreHorizontal } from 'lucide-react';
+import { Play, TrendingUp, Code2, Palette, Database, Cpu, Zap, Brain, BarChart3, ArrowRight, Wallet, CreditCard, Users, Menu, MoreHorizontal, X, Minimize2, Maximize2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -175,22 +175,54 @@ export default function Hero() {
               className="absolute inset-0 bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 rounded-3xl blur-2xl"
             ></motion.div>
             
-            {/* Main Skill Analysis Card with Royal Glassmorphism */}
+            {/* Main Skill Analysis Card with Enhanced Glassmorphism and Exit Controls */}
             <motion.div 
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 sm:p-8 mb-6 shadow-2xl"
+              className="relative backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl p-6 sm:p-8 mb-6 shadow-2xl group"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%)',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
               }}
             >
+              {/* Window Controls */}
+              <div className="absolute top-4 right-4 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-3 h-3 bg-red-400 rounded-full hover:bg-red-500 transition-colors duration-200"
+                  title="Close"
+                >
+                  <X className="w-2 h-2 text-white mx-auto" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-3 h-3 bg-yellow-400 rounded-full hover:bg-yellow-500 transition-colors duration-200"
+                  title="Minimize"
+                >
+                  <Minimize2 className="w-2 h-2 text-white mx-auto" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-3 h-3 bg-green-400 rounded-full hover:bg-green-500 transition-colors duration-200"
+                  title="Maximize"
+                >
+                  <Maximize2 className="w-2 h-2 text-white mx-auto" />
+                </motion.button>
+              </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <motion.div 
+                    className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
                     <Brain className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
-                  </div>
+                  </motion.div>
                   <div>
                     <p className="text-white font-semibold text-sm sm:text-base">AI Skill Analysis</p>
                     <p className="text-white text-xs opacity-80">Powered by AI</p>
@@ -205,12 +237,24 @@ export default function Hero() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-white/60 hover:text-white transition-colors" title="Analysis options" aria-label="Analysis options">
+                  <motion.button 
+                    className="p-2 text-white/60 hover:text-white transition-colors" 
+                    title="Analysis options" 
+                    aria-label="Analysis options"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
                     <BarChart3 className="h-4 w-4" />
-                  </button>
-                  <button className="p-2 text-white/60 hover:text-white transition-colors" title="More insights" aria-label="More insights">
+                  </motion.button>
+                  <motion.button 
+                    className="p-2 text-white/60 hover:text-white transition-colors" 
+                    title="More insights" 
+                    aria-label="More insights"
+                    whileHover={{ scale: 1.1, rotate: -5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
                     <MoreHorizontal className="h-4 w-4" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
               
@@ -258,70 +302,110 @@ export default function Hero() {
               </div>
             </motion.div>
 
-            {/* Floating Skill Analysis Cards */}
+            {/* Enhanced Floating Skill Analysis Cards */}
             {skillAnalysisCards.map((card, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: 50, y: 50 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ delay: 0.5 + index * 0.2, duration: 0.6 }}
-                className={`absolute ${card.position} backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl hidden sm:block`}
+                whileHover={{ 
+                  scale: 1.05, 
+                  y: -5,
+                  boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)"
+                }}
+                className={`absolute ${card.position} backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl hidden sm:block group cursor-pointer`}
                 style={{
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%)',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
                 }}
-                animate={{
-                  y: [0, -10, 0],
-                  opacity: [0.8, 1, 0.8]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: index * 0.5
-                }}
               >
+                {/* Exit Controls for Floating Cards */}
+                <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <motion.button
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.8 }}
+                    className="w-4 h-4 bg-red-400 rounded-full hover:bg-red-500 transition-colors duration-200 flex items-center justify-center"
+                    title="Close"
+                  >
+                    <X className="w-2 h-2 text-white" />
+                  </motion.button>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className={`w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r ${card.color} rounded-lg flex items-center justify-center`}>
+                    <motion.div 
+                      className={`w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r ${card.color} rounded-lg flex items-center justify-center`}
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
                       <card.icon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                    </div>
+                    </motion.div>
                     <div>
                       <p className="text-gray-900 font-medium text-xs sm:text-sm">{card.title}</p>
                       <p className="text-gray-600 text-xs">{card.label}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm sm:text-lg font-bold text-gray-900">{card.metric}</div>
+                    <motion.div 
+                      className="text-sm sm:text-lg font-bold text-gray-900"
+                      animate={{ 
+                        scale: [1, 1.05, 1],
+                        textShadow: [
+                          "0 0 0px rgba(0,0,0,0)",
+                          "0 0 10px rgba(0,0,0,0.1)",
+                          "0 0 0px rgba(0,0,0,0)"
+                        ]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      {card.metric}
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
             ))}
 
-            {/* Side Skill Analysis Card */}
+            {/* Enhanced Side Skill Analysis Card */}
             <motion.div 
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
-              className="absolute top-20 -right-4 sm:-right-8 backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl hidden sm:block"
+              whileHover={{ 
+                scale: 1.05, 
+                y: -5,
+                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)"
+              }}
+              className="absolute top-20 -right-4 sm:-right-8 backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl hidden sm:block group cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
               }}
-              animate={{
-                y: [0, -15, 0],
-                rotate: [0, 2, 0]
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
             >
+              {/* Exit Controls */}
+              <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <motion.button
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.8 }}
+                  className="w-4 h-4 bg-red-400 rounded-full hover:bg-red-500 transition-colors duration-200 flex items-center justify-center"
+                  title="Close"
+                >
+                  <X className="w-2 h-2 text-white" />
+                </motion.button>
+              </div>
+
               <div className="flex flex-col items-center space-y-2">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center">
+                <motion.div 
+                  className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center"
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                >
                   <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                </div>
+                </motion.div>
                 <p className="text-white text-xs font-medium">Real-time Analytics</p>
                 <p className="text-white text-xs opacity-80">24/7 Monitoring</p>
                 <motion.div
@@ -335,12 +419,17 @@ export default function Hero() {
               </div>
             </motion.div>
 
-            {/* Bottom Skill Analysis Action Card */}
+            {/* Enhanced Bottom Skill Analysis Action Card */}
             <motion.div 
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.6 }}
-              className="absolute bottom-10 left-0 right-0 backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl"
+              whileHover={{ 
+                scale: 1.02, 
+                y: -2,
+                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)"
+              }}
+              className="absolute bottom-10 left-0 right-0 backdrop-blur-xl bg-white/20 border border-white/30 rounded-xl p-3 sm:p-4 shadow-xl group cursor-pointer"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
@@ -355,17 +444,41 @@ export default function Hero() {
                 ease: "easeInOut"
               }}
             >
+              {/* Exit Controls */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <motion.button
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.8 }}
+                  className="w-4 h-4 bg-red-400 rounded-full hover:bg-red-500 transition-colors duration-200 flex items-center justify-center"
+                  title="Close"
+                >
+                  <X className="w-2 h-2 text-white" />
+                </motion.button>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 sm:space-x-4">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <motion.div 
+                    className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
                     <Brain className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-                  </div>
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                  </motion.div>
+                  <motion.div 
+                    className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
                     <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-                  </div>
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                  </motion.div>
+                  <motion.div 
+                    className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-lg flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
                     <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-                  </div>
+                  </motion.div>
                 </div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}

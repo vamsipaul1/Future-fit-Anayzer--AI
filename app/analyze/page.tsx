@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import BackButton from '../../components/BackButton';
-import AIChatbot from '../../components/AIChatbot';
+import BackButton from '../../components/ui/BackButton';
+import AIChatbot from '../../components/ui/AIChatbot';
 
 export default function AnalyzePage() {
   const [currentStep, setCurrentStep] = useState(1);

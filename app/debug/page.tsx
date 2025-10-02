@@ -56,18 +56,18 @@ export default function DebugPage() {
         status: 'Error',
         ok: false,
         url: href,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   };
 
   const runAllTests = async () => {
-    const results = [];
+    const results: any[] = [];
     for (const page of testPages) {
       const result = await testPageAccess(page.href);
       results.push({ ...page, ...result });
     }
-    setDebugInfo(prev => ({ ...prev, pageTests: results }));
+    setDebugInfo((prev: any) => ({ ...prev, pageTests: results }));
   };
 
   if (isLoading) {
@@ -194,15 +194,15 @@ export default function DebugPage() {
                       <strong>URL:</strong> {page.href}
                     </div>
                     
-                    {debugInfo.pageTests?.find(test => test.href === page.href) && (
+                    {debugInfo.pageTests?.find((test: any) => test.href === page.href) && (
                       <div className="flex items-center space-x-2">
-                        {debugInfo.pageTests.find(test => test.href === page.href).ok ? (
+                        {debugInfo.pageTests.find((test: any) => test.href === page.href).ok ? (
                           <CheckCircle className="w-4 h-4 text-green-500" />
                         ) : (
                           <XCircle className="w-4 h-4 text-red-500" />
                         )}
                         <span className="text-sm">
-                          Status: {debugInfo.pageTests.find(test => test.href === page.href).status}
+                          Status: {debugInfo.pageTests.find((test: any) => test.href === page.href).status}
                         </span>
                       </div>
                     )}

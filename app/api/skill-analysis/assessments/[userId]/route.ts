@@ -30,9 +30,8 @@ export async function GET(
     const assessmentsWithResults = assessments.map(assessment => ({
       id: assessment.id,
       domain: assessment.domain,
-      score: assessment.score,
-      createdAt: assessment.createdAt,
-      results: assessment.results ? JSON.parse(assessment.results) : null
+      score: assessment.overallScore,
+      createdAt: assessment.createdAt
     }));
 
     return NextResponse.json({

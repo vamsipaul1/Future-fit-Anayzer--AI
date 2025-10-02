@@ -3,8 +3,29 @@ import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    // This function only runs for protected routes
-    // Public routes are handled by the authorized callback
+    const { pathname } = req.nextUrl
+    const token = req.nextauth.token
+    
+    // Handle post-authentication redirects
+    if (token) {
+      const isNewUser = (token as any)?.isNewUser
+      
+      // If user is trying to access sign-in or sign-up pages while authenticated
+      if (pathname === '/auth/signin' || pathname === '/signup') {
+        if (isNewUser) {
+          return NextResponse.redirect(new URL('/dashboard', req.url))
+        } else {
+          return NextResponse.redirect(new URL('/', req.url))
+        }
+      }
+      
+      // If user is trying to access dashboard, check if they're new
+      if (pathname === '/dashboard' && !isNewUser) {
+        // Returning users might want to go to dashboard, so allow it
+        return NextResponse.next()
+      }
+    }
+    
     return NextResponse.next()
   },
   {

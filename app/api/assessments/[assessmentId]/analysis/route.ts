@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/database/prisma';
 
 interface SkillAnalysis {
   skillId: string;
@@ -157,10 +157,10 @@ async function generateRecommendations(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { assessmentId: string } }
+  { params }: { params: Promise<{ assessmentId: string }> }
 ) {
   try {
-    const { assessmentId } = params;
+    const { assessmentId } = await params;
 
     // Get assessment with all related data
     const assessment = await prisma.assessment.findUnique({
@@ -197,7 +197,7 @@ export async function GET(
     }
 
     // Generate anonymized user label (privacy protection)
-    const anonymizedUserLabel = generateAnonymizedLabel(assessment.userId);
+    const anonymizedUserLabel = generateAnonymizedLabel(assessment.userId || undefined);
 
     // Get all questions for this assessment
     const questionIds = assessment.items.map(item => item.questionId);
@@ -236,7 +236,7 @@ export async function GET(
     let totalQuestions = 0;
     let totalTimeSpent = 0;
 
-    for (const [skillId, group] of skillGroups) {
+    for (const [skillId, group] of Array.from(skillGroups)) {
       const { skill, items, questions } = group;
       
       const questionsAttempted = items.length;
@@ -309,7 +309,7 @@ export async function GET(
       group.correctAnswers += skillAnalysis.correctAnswers;
     }
 
-    for (const [domainId, group] of domainGroups) {
+    for (const [domainId, group] of Array.from(domainGroups)) {
       const percentCorrect = group.totalQuestions > 0 
         ? (group.correctAnswers / group.totalQuestions) * 100 
         : 0;

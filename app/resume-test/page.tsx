@@ -19,7 +19,7 @@ import {
 
 export default function ResumeAnalysisTest() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [error, setError] = useState('');
 
   const sampleResume = `John Doe
@@ -77,13 +77,13 @@ SKILLS:
     }
   };
 
-  const getScoreColor = (score) => {
+  const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getScoreBgColor = (score) => {
+  const getScoreBgColor = (score: number) => {
     if (score >= 80) return 'bg-green-100';
     if (score >= 60) return 'bg-yellow-100';
     return 'bg-red-100';
@@ -172,7 +172,7 @@ SKILLS:
                       <h3 className="text-lg font-semibold text-green-800">Strengths</h3>
                     </div>
                     <ul className="space-y-2">
-                      {(analysisResult.strengths || []).map((strength, index) => (
+                      {(analysisResult.strengths || []).map((strength: any, index: number) => (
                         <li key={index} className="text-green-700 flex items-center">
                           <Star className="w-4 h-4 mr-2" />
                           {strength}
@@ -187,7 +187,7 @@ SKILLS:
                       <h3 className="text-lg font-semibold text-red-800">Areas for Improvement</h3>
                     </div>
                     <ul className="space-y-2">
-                      {(analysisResult.weaknesses || []).map((weakness, index) => (
+                      {(analysisResult.weaknesses || []).map((weakness: any, index: number) => (
                         <li key={index} className="text-red-700 flex items-center">
                           <AlertCircle className="w-4 h-4 mr-2" />
                           {weakness}
@@ -209,7 +209,7 @@ SKILLS:
                   <div className="bg-blue-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-blue-800 mb-4">Technical Skills</h4>
                     <div className="space-y-2">
-                      {(analysisResult.skills?.technical || []).map((skill, index) => (
+                      {(analysisResult.skills?.technical || []).map((skill: any, index: number) => (
                         <div key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                           {skill}
                         </div>
@@ -220,7 +220,7 @@ SKILLS:
                   <div className="bg-green-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-green-800 mb-4">Soft Skills</h4>
                     <div className="space-y-2">
-                      {(analysisResult.skills?.soft || []).map((skill, index) => (
+                      {(analysisResult.skills?.soft || []).map((skill: any, index: number) => (
                         <div key={index} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
                           {skill}
                         </div>
@@ -231,7 +231,7 @@ SKILLS:
                   <div className="bg-orange-50 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-orange-800 mb-4">Missing Skills</h4>
                     <div className="space-y-2">
-                      {(analysisResult.skills?.missing || []).map((skill, index) => (
+                      {(analysisResult.skills?.missing || []).map((skill: any, index: number) => (
                         <div key={index} className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">
                           {skill}
                         </div>
@@ -248,7 +248,7 @@ SKILLS:
                   AI Recommendations
                 </h3>
                 <div className="space-y-4">
-                  {(analysisResult.recommendations || []).map((rec, index) => (
+                  {(analysisResult.recommendations || []).map((rec: any, index: number) => (
                     <div key={index} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold text-gray-900">{rec.category}</h4>

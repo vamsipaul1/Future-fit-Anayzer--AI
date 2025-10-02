@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import BackButton from '../../components/BackButton';
-import AIChatbot from '../../components/AIChatbot';
+import BackButton from '../../components/ui/BackButton';
+import AIChatbot from '../../components/ui/AIChatbot';
 import { 
   Upload, 
   FileText, 
@@ -72,6 +72,7 @@ export default function AdvancedResumeAnalyzer() {
   const [jobDescription, setJobDescription] = useState('');
   const [analysisType, setAnalysisType] = useState<'comprehensive' | 'skills' | 'career'>('comprehensive');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState('');
   const [analysisResult, setAnalysisResult] = useState<ResumeAnalysis | null>(null);
   const [careerAnalysis, setCareerAnalysis] = useState<CareerAnalysis | null>(null);
   const [error, setError] = useState('');
@@ -100,7 +101,20 @@ export default function AdvancedResumeAnalyzer() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to extract text');
+        // Handle specific error cases with helpful messages
+        if (data.error && data.error.includes('image-based')) {
+          throw new Error('This PDF appears to be a scanned image. Please upload a text-based PDF or convert to TXT format.');
+        } else if (data.error && data.error.includes('No text found')) {
+          throw new Error('No readable text found in the file. Please ensure your PDF contains selectable text, not just images.');
+        } else if (data.error && data.error.includes('Unsupported file type')) {
+          throw new Error('Unsupported file type. Please upload PDF, DOC, DOCX, or TXT files only.');
+        } else if (data.error && data.error.includes('File size too large')) {
+          throw new Error('File size too large. Please upload files smaller than 10MB.');
+        } else if (data.suggestion) {
+          throw new Error(`${data.error || 'Failed to extract text'}. ${data.suggestion}`);
+        } else {
+          throw new Error(data.error || 'Failed to extract text');
+        }
       }
 
       setUploadedFile(file);
@@ -118,8 +132,11 @@ export default function AdvancedResumeAnalyzer() {
 
     setError('');
     setIsAnalyzing(true);
+    setAnalysisProgress('Initializing analysis...');
 
     try {
+      setAnalysisProgress('Sending data to Gemini AI...');
+      
       const response = await fetch('/api/resume-analysis', {
         method: 'POST',
         headers: {
@@ -138,11 +155,13 @@ export default function AdvancedResumeAnalyzer() {
         throw new Error(data.error || 'Analysis failed');
       }
 
+      setAnalysisProgress('Processing response...');
       console.log('API Response:', data); // Debug log
 
       // Handle the response directly - Gemini API returns structured data
       if (data.overallScore !== undefined) {
         // This is a proper Gemini analysis response
+        setAnalysisProgress('Finalizing results...');
         setAnalysisResult(data);
       } else if (data.type === 'text') {
         // Handle text response - show the actual AI analysis text
@@ -183,6 +202,7 @@ export default function AdvancedResumeAnalyzer() {
       setError(err instanceof Error ? err.message : 'Analysis failed');
     } finally {
       setIsAnalyzing(false);
+      setAnalysisProgress('');
     }
   };
 
@@ -275,10 +295,63 @@ export default function AdvancedResumeAnalyzer() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center"
+            className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4"
           >
-            <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-            <span className="text-red-800">{error}</span>
+            <div className="flex items-start">
+              <AlertCircle className="w-5 h-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <span className="text-red-800 font-medium">{error}</span>
+                
+                {/* Helpful suggestions based on error type */}
+                {error.includes('scanned image') && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">💡 How to fix this:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Convert your PDF to TXT format using Microsoft Word or Google Docs</li>
+                      <li>• Use OCR tools like Adobe Acrobat to extract text from scanned PDFs</li>
+                      <li>• Save your resume as a Word document (.docx) instead</li>
+                      <li>• Copy and paste your resume text into a .txt file</li>
+                    </ul>
+                  </div>
+                )}
+                
+                {error.includes('No readable text') && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">💡 How to fix this:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Ensure your PDF contains selectable text (not just images)</li>
+                      <li>• Try opening the PDF and copying the text to a new document</li>
+                      <li>• Convert to TXT format for better compatibility</li>
+                      <li>• Check if the file is corrupted by opening it in another program</li>
+                    </ul>
+                  </div>
+                )}
+                
+                {error.includes('Unsupported file type') && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">💡 Supported formats:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• PDF files (text-based, not scanned images)</li>
+                      <li>• TXT files (plain text)</li>
+                      <li>• DOC files (Microsoft Word)</li>
+                      <li>• DOCX files (Microsoft Word)</li>
+                    </ul>
+                  </div>
+                )}
+                
+                {error.includes('File size too large') && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2">💡 How to fix this:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Compress your PDF using online tools</li>
+                      <li>• Convert to TXT format (much smaller file size)</li>
+                      <li>• Remove images and keep only text content</li>
+                      <li>• Split large documents into smaller parts</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -327,6 +400,7 @@ export default function AdvancedResumeAnalyzer() {
                       const file = e.target.files?.[0];
                       if (file) handleFileUpload(file);
                     }}
+                    aria-label="Upload resume file"
                     className="hidden"
                     suppressHydrationWarning
                   />
@@ -480,7 +554,7 @@ export default function AdvancedResumeAnalyzer() {
                     {isAnalyzing ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                        Analyzing...
+                        {analysisProgress || 'Analyzing...'}
                       </>
                     ) : (
                       <>
@@ -645,6 +719,118 @@ export default function AdvancedResumeAnalyzer() {
                 <p className="text-gray-700 text-lg leading-relaxed">
                   {analysisResult.summary || 'No summary available'}
                 </p>
+              </div>
+
+              {/* Raw JSON Response */}
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <Brain className="w-6 h-6 mr-2 text-purple-600" />
+                  Raw Gemini AI Response
+                </h3>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-800">JSON Response</h4>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(analysisResult, null, 2));
+                      }}
+                      className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                    >
+                      Copy JSON
+                    </button>
+                  </div>
+                  <pre className="text-sm text-gray-700 overflow-x-auto max-h-96 overflow-y-auto">
+                    {JSON.stringify(analysisResult, null, 2)}
+                  </pre>
+                </div>
+                
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="bg-blue-50 p-3 rounded">
+                    <div className="font-semibold text-blue-800">Analysis Type</div>
+                    <div className="text-blue-700">{analysisType}</div>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded">
+                    <div className="font-semibold text-green-800">Data Source</div>
+                    <div className="text-green-700">Gemini AI</div>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded">
+                    <div className="font-semibold text-purple-800">Response Time</div>
+                    <div className="text-purple-700">Real-time</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Debug Information */}
+              <div className="bg-white rounded-2xl shadow-lg p-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <AlertCircle className="w-6 h-6 mr-2 text-orange-600" />
+                  Debug Information
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-3">Analysis Details</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Overall Score:</span>
+                        <span className="font-semibold">{analysisResult.overallScore || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">ATS Score:</span>
+                        <span className="font-semibold">{analysisResult.atsScore || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Keyword Match:</span>
+                        <span className="font-semibold">{analysisResult.keywordMatch || 'N/A'}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Experience Level:</span>
+                        <span className="font-semibold">{analysisResult.experience?.level || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Years Experience:</span>
+                        <span className="font-semibold">{analysisResult.experience?.years || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-3">Skills Count</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Technical Skills:</span>
+                        <span className="font-semibold">{analysisResult.skills?.technical?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Soft Skills:</span>
+                        <span className="font-semibold">{analysisResult.skills?.soft?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Missing Skills:</span>
+                        <span className="font-semibold">{analysisResult.skills?.missing?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Strengths:</span>
+                        <span className="font-semibold">{analysisResult.strengths?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Weaknesses:</span>
+                        <span className="font-semibold">{analysisResult.weaknesses?.length || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="text-lg font-semibold text-blue-800 mb-2">Analysis Status</h4>
+                  <div className="text-sm text-blue-700">
+                    <p>✅ <strong>Gemini AI Analysis Complete</strong> - Real-time analysis of your resume</p>
+                    <p>✅ <strong>Job Description Comparison</strong> - {jobDescription ? 'Included' : 'Not provided'}</p>
+                    <p>✅ <strong>Skills Extraction</strong> - Based on actual resume content</p>
+                    <p>✅ <strong>Recommendations Generated</strong> - Personalized suggestions</p>
+                  </div>
+                </div>
               </div>
 
               {/* Action Buttons */}

@@ -194,7 +194,7 @@ function generateRecommendations(skillScores: Record<string, any>) {
   }
   
   return recommendations.sort((a, b) => {
-    const priorityOrder = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
+    const priorityOrder: { [key: string]: number } = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
 }
@@ -278,7 +278,7 @@ export async function POST(request: NextRequest) {
         questionId: answerData.questionId,
         skillId: question.skillId,
         skillName: question.skill.name,
-        domainName: question.skill.domain.name,
+        domainName: question.skill.domain?.name || 'Unknown',
         questionType: question.type,
         questionLevel: question.level,
         answer: answerData.answer,
